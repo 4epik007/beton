@@ -59,6 +59,10 @@ svg { display: block; width: 100%; height: auto; touch-action: manipulation; }
 .fll .rst { fill: var(--accent); text-decoration: underline; }
 .fll.has .rst { fill: var(--sel); font-weight: 600; }
 .rax { fill: var(--muted); font-family: var(--font-num); font-size: 11px; dominant-baseline: central; }
+.el .rax { fill: var(--accent); font-weight: 600; }
+.el.sel .rax { fill: var(--sel); font-weight: 700; }
+.el.done .rax { fill: var(--done); }
+.el.fail .rax { fill: var(--fail); }
 .rst { fill: var(--muted); font-size: 12px; text-anchor: middle; dominant-baseline: central; }
 .tick { stroke: var(--wall-stroke); stroke-width: 1; }
 .axl { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
@@ -155,14 +159,8 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
       <span><i class="ln"></i>збірні марші</span>
     </div>
     <svg id="svgR" role="img" aria-label="Розріз будинку"></svg>
-    <p class="note">Торкніться поверху на розрізі, щоб вибрати пілони. Сходи, плити і площадки — на розрізі або кнопками нижче.</p>
-    <h3>Сходи <small>з -3,400 до +4,400, по 1,6 м³</small></h3>
-    <div class="rcs" id="chSx"></div>
-    <h3>Плити перекриття <small>плиту замовляють окремою заявкою</small></h3>
-    <div class="rcs" id="chPk"></div>
+    <p class="note">Поверх — пілони цього поверху. Відмітка зліва або плита — перекриття (окремою заявкою, з насосом). Відмітка СП-1 справа — площадка (0,75 м³). Сходи Сх1–Сх5 — по 1,6 м³.</p>
     <p class="warn" id="slabInfo" hidden></p>
-    <h3>Площадки СП-1 <small>міжповерхові, по 0,75 м³</small></h3>
-    <div class="rcs" id="chSp"></div>
   </section>
 
   <section class="card">
@@ -340,7 +338,7 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
   // ===== Розріз (з артефакту «Розріз будинку») =====
   function mark3(z) { return (z < 0 ? '-' : '+') + Math.abs(z).toFixed(3).replace('.', ','); }
   function zkey(z) { return Math.round(z * 1000); }
-  var RE = [];
+  var RE = [], byR = {};
   [['Сх1', 'sx1', -1.316, -3.4, '--c-sx1', 2.5, 0], ['Сх2', 'sx2', -1.316, -0.1, '--c-sx2', -2.5, 2.5], ['Сх3', 'sx3', 1.93, -0.1, '--c-sx3', 2.5, -2.5],
    ['Сх4', 'sx4', 1.93, 2.98, '--c-sx4', -2.5, 2.5], ['Сх5', 'sx5', 4.4, 2.98, '--c-sx5', 0, -2.5]].forEach(function (s) {
     RE.push({ id: s[1], type: 'sx', n: s[0], z1: s[2], z2: s[3], col: s[4], oa: s[5], ob: s[6], v: 1.6,
@@ -356,6 +354,7 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     var rzz = Math.round((5.98 + 3 * rj) * 1000) / 1000;
     RE.push({ id: 'sp' + zkey(rzz), type: 'sp', z: rzz, v: 0.75, n: mark3(rzz), full: 'СП-1 ' + mark3(rzz) });
   }
+  RE.forEach(function (e) { byR[e.id] = e; });
   // об'єми плит, де вже є (одна захватка)
   var PKV = { 'С-5': { pk4400: { v: 80.5, ax: '1с-11с/Ас-Дс' }, pk7400: { v: 81.86, ax: '1с-11с/Ас-Дс' } } };
   function pkVol(s, e) { var m = PKV[s]; return m && m[e.id] ? m[e.id] : null; }
@@ -463,9 +462,9 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     for (var m = 0; m < 16; m++) { leftZ.push(Math.round((7.4 + 3 * m) * 1000) / 1000); rightZ.push(Math.round((5.98 + 3 * m) * 1000) / 1000); }
     leftZ = leftZ.filter(function (z, i, a) { return a.indexOf(z) === i; });
     mk('line', { x1: X.ax + 6, y1: TOP, x2: X.ax + 6, y2: BASE, 'class': 'axl' }, sv);
-    leftZ.forEach(function (z) { mk('line', { x1: X.ax + 2, y1: yy(z), x2: X.ax + 6, y2: yy(z), 'class': 'tick' }, sv); txt(sv, 'rax', X.ax, yy(z), mark3(z), 'end'); });
+    leftZ.forEach(function (z) { mk('line', { x1: X.ax + 2, y1: yy(z), x2: X.ax + 6, y2: yy(z), 'class': 'tick' }, sv); if (!byR['pk' + zkey(z)]) txt(sv, 'rax', X.ax, yy(z), mark3(z), 'end'); });
     mk('line', { x1: X.t - 2, y1: TOP, x2: X.t - 2, y2: BASE, 'class': 'axl' }, sv);
-    rightZ.forEach(function (z) { mk('line', { x1: X.t - 2, y1: yy(z), x2: X.t + 2, y2: yy(z), 'class': 'tick' }, sv); txt(sv, 'rax', X.t + 6, yy(z), (z >= 5.9 ? 'СП-1 ' : '') + mark3(z), 'start'); });
+    rightZ.forEach(function (z) { mk('line', { x1: X.t - 2, y1: yy(z), x2: X.t + 2, y2: yy(z), 'class': 'tick' }, sv); if (!byR['sp' + zkey(z)]) txt(sv, 'rax', X.t + 6, yy(z), mark3(z), 'start'); });
     txt(sv, 'rst', 106, (yy(-3.4) + yy(-0.1)) / 2, 'цоколь');
     function flLink(n, z1, z2) {
       var a = mk('g', { 'class': 'fll', role: 'button' }, sv);
@@ -497,9 +496,15 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
         var cx0 = e.z === 55.3 ? X.c1 : X.s0, cx1 = e.z === 55.3 ? X.r0 : X.s1, hx1 = e.z === 55.3 ? X.r0 : X.c1;
         mk('rect', { x: cx0, y: yy(e.z) - 4, width: cx1 - cx0, height: 8, 'class': 'sh' }, g);
         mk('rect', { x: cx0, y: yy(e.z) - 13, width: hx1 - cx0, height: 26, 'class': 'hit' }, g);
+        // відмітка зліва — теж кнопка
+        mk('rect', { x: 0, y: yy(e.z) - 12, width: X.ax + 12, height: 24, 'class': 'hit' }, g);
+        txt(g, 'rax', X.ax, yy(e.z), mark3(e.z), 'end');
       } else if (e.type === 'sp') {
         mk('rect', { x: X.l0, y: yy(e.z) - 4, width: X.l1 - X.l0, height: 8, 'class': 'sh' }, g);
         mk('rect', { x: X.l0, y: yy(e.z) - 13, width: X.r0 - X.l0, height: 26, 'class': 'hit' }, g);
+        // відмітка справа — теж кнопка
+        mk('rect', { x: X.t - 4, y: yy(e.z) - 12, width: 384 - X.t, height: 24, 'class': 'hit' }, g);
+        txt(g, 'rax', X.t + 6, yy(e.z), 'СП-1 ' + mark3(e.z), 'start');
       } else {
         var xa2 = X.f0, xb2 = X.f1, ya2 = yy(e.z1) + e.oa, yb2 = yy(e.z2) + e.ob;
         var full = 'M' + X.c1 + ' ' + ya2 + ' H' + xa2 + ' L' + xb2 + ' ' + yb2 + ' H' + X.r0;
@@ -514,15 +519,6 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
       }
       g.addEventListener('click', function () { act(e.id); });
       rnodes[e.id] = g;
-    });
-    // кнопки-чипи
-    [['sx', 'chSx'], ['pk', 'chPk'], ['sp', 'chSp']].forEach(function (p) {
-      RE.filter(function (e) { return e.type === p[0]; }).forEach(function (e) {
-        var b = document.createElement('button'); b.type = 'button'; b.className = 'rc';
-        b.textContent = e.roof ? e.n + ' покр.' : e.n;
-        b.addEventListener('click', function () { act(e.id); });
-        $(p[1]).appendChild(b); rchips[e.id] = b;
-      });
     });
   })();
 
@@ -691,7 +687,6 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
       RE.forEach(function (e) {
         var s = stateOf(sec, 'r', e.id), a = e.id === active ? ' act' : '';
         rnodes[e.id].setAttribute('class', 'el' + (s ? ' ' + s : '') + a);
-        rchips[e.id].className = 'rc' + (s ? ' ' + s : '') + a;
       });
     }
     $('cardH').hidden = view !== 'h'; $('cardF').hidden = view !== 'f'; $('cardR').hidden = view !== 'r';
