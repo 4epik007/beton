@@ -55,6 +55,9 @@ svg { display: block; width: 100%; height: auto; touch-action: manipulation; }
 /* розріз */
 #svgR .el .sh { stroke-width: 1; }
 #svgR .el.act .sh { stroke-width: 3; }
+.fll { cursor: pointer; }
+.fll .rst { fill: var(--accent); text-decoration: underline; }
+.fll.has .rst { fill: var(--sel); font-weight: 600; }
 .rax { fill: var(--muted); font-family: var(--font-num); font-size: 11px; dominant-baseline: central; }
 .rst { fill: var(--muted); font-size: 12px; text-anchor: middle; dominant-baseline: central; }
 .tick { stroke: var(--wall-stroke); stroke-width: 1; }
@@ -110,12 +113,10 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
   </header>
 
   <div class="card top" aria-live="polite">
-    <button class="btn alt small" id="home" type="button">← План будинку</button>
-    <div class="two" id="tabs">
-      <button class="btn alt small" data-view="f" type="button">Пілони і стіни</button>
-      <button class="btn alt small" data-view="r" type="button">Розріз: сходи, плити</button>
+    <div class="two" id="nav">
+      <button class="btn alt small" id="home" type="button">← План будинку</button>
+      <button class="btn alt small" id="toR" type="button">← Розріз секції</button>
     </div>
-    <div class="fls" id="fls"></div>
     <div class="row">
       <div class="tot"><span class="lbl">Вибрано в заявку</span><span id="selVol">0,00</span> <small>м³</small></div>
       <button class="btn alt small" id="clear" type="button">Зняти вибір</button>
@@ -153,14 +154,15 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
       <span><i style="background:var(--fail)"></i>не залили</span>
       <span><i class="ln"></i>збірні марші</span>
     </div>
-    <h3 style="margin-top:0">Сходи <small>з -3,400 до +4,400, по 1,6 м³</small></h3>
+    <svg id="svgR" role="img" aria-label="Розріз будинку"></svg>
+    <p class="note">Торкніться поверху на розрізі, щоб вибрати пілони. Сходи, плити і площадки — на розрізі або кнопками нижче.</p>
+    <h3>Сходи <small>з -3,400 до +4,400, по 1,6 м³</small></h3>
     <div class="rcs" id="chSx"></div>
     <h3>Плити перекриття <small>плиту замовляють окремою заявкою</small></h3>
     <div class="rcs" id="chPk"></div>
     <p class="warn" id="slabInfo" hidden></p>
     <h3>Площадки СП-1 <small>міжповерхові, по 0,75 м³</small></h3>
     <div class="rcs" id="chSp"></div>
-    <svg id="svgR" role="img" aria-label="Розріз будинку" style="margin-top:12px"></svg>
   </section>
 
   <section class="card">
@@ -194,7 +196,7 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     </div>
     <p class="ok" id="msg" role="status"></p>
     <p class="note" id="whoLine"></p>
-    <p class="note">Щоб додати в заявку іншу секцію чи сходи, перемкніть секцію або розріз угорі й виберіть елементи. Усе вибране піде однією заявкою. Плита йде окремою заявкою. Позначки «залито» спільні для всіх бригадирів.</p>
+    <p class="note">Щоб додати в заявку інший поверх, сходи чи іншу секцію, поверніться на розріз або план кнопками вгорі й виберіть елементи. Усе вибране піде однією заявкою. Плита йде окремою заявкою. Позначки «залито» спільні для всіх бригадирів.</p>
   </section>
 </div>
 
@@ -379,7 +381,7 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
   var ST = {};  // позначки з таблиці: { '<секція>:<поверх або r>:<id>': {s, d, who} }
   var SEL = {}; // вибір у заявку (тільки на цьому телефоні)
   SEC_LIST.forEach(function (s) { SEL[s] = {}; GROUPS.forEach(function (f) { SEL[s][f] = {}; }); });
-  var sec = 'С-6', floor = 2, view = 'h', active = null, dateOk = false, busy = false, nodes = {}, rnodes = {}, rchips = {};
+  var sec = 'С-6', floor = 2, view = 'h', active = null, dateOk = false, busy = false, nodes = {}, rnodes = {}, rchips = {}, fll = {}, flab = {};
   function grp() { return view === 'r' ? 'r' : floor; }
   function key(s, f, id) { return (TEST ? 'test:' : '') + s + ':' + f + ':' + id; }
   function markOf(s, f, id) {
@@ -402,12 +404,6 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     return fetch(EXEC + q).then(function (r) { return r.json(); }).then(function (j) { ST = j || {}; render(); });
   }
 
-  // ===== Кнопки поверхів =====
-  FLOORS.forEach(function (f) {
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'btn alt'; b.setAttribute('data-fl', f);
-    b.addEventListener('click', function () { go(sec, f, 'f'); });
-    $('fls').appendChild(b);
-  });
 
   // ===== Малювання схеми поверху поточної секції =====
   var svg = $('svg');
@@ -471,8 +467,18 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     mk('line', { x1: X.t - 2, y1: TOP, x2: X.t - 2, y2: BASE, 'class': 'axl' }, sv);
     rightZ.forEach(function (z) { mk('line', { x1: X.t - 2, y1: yy(z), x2: X.t + 2, y2: yy(z), 'class': 'tick' }, sv); txt(sv, 'rax', X.t + 6, yy(z), (z >= 5.9 ? 'СП-1 ' : '') + mark3(z), 'start'); });
     txt(sv, 'rst', 106, (yy(-3.4) + yy(-0.1)) / 2, 'цоколь');
-    txt(sv, 'rst', 106, (yy(-0.1) + yy(4.4)) / 2, '1-й поверх');
-    for (var n = 2; n <= 17; n++) { var za = Math.round((4.4 + 3 * (n - 2)) * 1000) / 1000; txt(sv, 'rst', 106, (yy(za) + yy(Math.round((za + 3) * 1000) / 1000)) / 2, n + '-й поверх'); }
+    function flLink(n, z1, z2) {
+      var a = mk('g', { 'class': 'fll', role: 'button' }, sv);
+      mk('rect', { x: 62, y: yy(z2), width: 88, height: yy(z1) - yy(z2), fill: 'transparent' }, a);
+      flab[n] = txt(a, 'rst', 106, (yy(z1) + yy(z2)) / 2, n + '-й поверх');
+      fll[n] = a;
+      a.addEventListener('click', function () {
+        if (n === 1) { $('info').textContent = '1-й поверх ще не перенесений у додаток.'; return; }
+        go(sec, n, 'f');
+      });
+    }
+    flLink(1, -0.1, 4.4);
+    for (var n = 2; n <= 17; n++) { var za = Math.round((4.4 + 3 * (n - 2)) * 1000) / 1000; flLink(n, za, Math.round((za + 3) * 1000) / 1000); }
     txt(sv, 'rst', 215, (yy(52.4) + yy(55.3)) / 2 - 7, 'покрівельний');
     txt(sv, 'rst', 215, (yy(52.4) + yy(55.3)) / 2 + 8, 'поверх');
     // збірні марші вище +4,400
@@ -688,8 +694,9 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
         rchips[e.id].className = 'rc' + (s ? ' ' + s : '') + a;
       });
     }
-    $('cardH').hidden = view !== 'h'; $('cardF').hidden = view !== 'f'; $('cardR').hidden = view !== 'r'; $('fls').hidden = view !== 'f';
-    $('home').hidden = view === 'h'; $('tabs').hidden = view === 'h';
+    $('cardH').hidden = view !== 'h'; $('cardF').hidden = view !== 'f'; $('cardR').hidden = view !== 'r';
+    $('nav').hidden = view === 'h'; $('toR').style.visibility = view === 'f' ? '' : 'hidden';
+    FLOORS.forEach(function (g) { var n = count(sec, g); fll[g].setAttribute('class', 'fll' + (n ? ' has' : '')); flab[g].textContent = g + '-й поверх' + (n ? ' (' + n + ')' : ''); });
     HB.forEach(function (b) {
       var n = 0; if (b.live) GROUPS.forEach(function (g) { n += count(b.id, g); });
       hnodes[b.id].setAttribute('class', 'b' + (b.park ? ' park' : '') + (b.live ? ' live' : ' off') + (n ? ' has' : ''));
@@ -702,17 +709,6 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
       var s = b.getAttribute('data-sec'), n = 0; GROUPS.forEach(function (g) { n += count(s, g); });
       b.classList.toggle('on', s === sec);
       b.innerHTML = s + (n && s !== sec ? '<span class="dot"></span>' : '');
-    });
-    each('[data-view]', function (b) {
-      var v = b.getAttribute('data-view'), n = v === 'r' ? count(sec, 'r') : 0;
-      if (v === 'f') FLOORS.forEach(function (g) { n += count(sec, g); });
-      b.classList.toggle('on', v === view);
-      b.innerHTML = (v === 'r' ? 'Розріз: сходи, плити' : 'Пілони і стіни') + (n && v !== view ? '<span class="dot"></span>' : '');
-    });
-    each('[data-fl]', function (b) {
-      var g = Number(b.getAttribute('data-fl'));
-      b.classList.toggle('on', g === floor);
-      b.innerHTML = g + (count(sec, g) && g !== floor ? '<span class="dot"></span>' : '');
     });
     var bk = $('basket'); bk.innerHTML = '';
     var P = parts();
@@ -821,19 +817,19 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     mk('rect', { x: b.x, y: b.y, width: b.w, height: b.h, rx: 3 }, g);
     mk('text', { x: b.x + b.w / 2, y: b.y + b.h / 2 }, g).textContent = b.id;
     g.addEventListener('click', function () {
-      if (b.live) { go(b.id, floor, 'f'); return; }
+      if (b.live) { go(b.id, floor, 'r'); return; }
       $('info').textContent = (b.boiler ? 'Котельня' : b.park ? 'Паркінг ' + b.id : 'Секція ' + b.id) + ': схем ще немає.';
     });
     hnodes[b.id] = g;
   });
   $('home').addEventListener('click', function () { go(sec, floor, 'h'); });
+  $('toR').addEventListener('click', function () { go(sec, floor, 'r'); });
 
   // ===== Секція, вид, поверх: кнопки, #s4-7, #s6-r або startapp=s4-7 =====
   each('[data-sec]', function (b) { b.addEventListener('click', function () { go(b.getAttribute('data-sec'), floor, view); }); });
-  each('[data-view]', function (b) { b.addEventListener('click', function () { go(sec, floor, b.getAttribute('data-view')); }); });
   function fromStr(str) {
     var ms = /s([456])/.exec(str || ''), mf = /(?:poverh-|-)(\d{1,2})$/.exec(str || '');
-    if (ms) { sec = 'С-' + ms[1]; if (view === 'h') view = 'f'; }
+    if (ms) { sec = 'С-' + ms[1]; if (view === 'h') view = 'r'; }
     if (/-r$/.test(str || '')) view = 'r';
     else if (mf && +mf[1] >= 2 && +mf[1] <= 17) { floor = +mf[1]; view = 'f'; }
   }
