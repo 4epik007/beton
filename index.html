@@ -373,7 +373,9 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
   function each(sel, fn) { Array.prototype.forEach.call(document.querySelectorAll(sel), fn); }
   function elems(s, f) { return f === 'r' ? RE : SECS[s].E; }
   function find(s, f, id) { return elems(s, f).filter(function (x) { return x.id === id; })[0]; }
-  function volOf(s, f, e) { if (f === 'r' && e.type === 'pk') { var q = pkVol(s, e); return q ? q.v : 0; } return e.v; }
+  var MV = {}; // об'єм плити, вписаний вручну (де ще немає схеми захваток)
+  function manV(s, e) { var v = parseFloat(String(MV[s + ':' + e.id] || '').replace(',', '.')); return isFinite(v) && v > 0 ? v : 0; }
+  function volOf(s, f, e) { if (f === 'r' && e.type === 'pk') { var q = pkVol(s, e); return q ? q.v : manV(s, e); } return e.v; }
   function otm(f) { return '+' + (4.4 + 3 * (f - 2)).toFixed(3).replace('.', ','); }
 
   // ===== Стан =====
@@ -583,19 +585,24 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     }
     if (!cur[id]) {
       var isSlab = f === 'r' && el.type === 'pk';
-      if (isSlab && !pkVol(sec, el)) {
-        var w = $('slabInfo'); w.hidden = false;
-        w.textContent = (el.roof ? 'Покрівля ' : 'Плита ') + el.n + ', ' + sec + ': схема захваток цієї плити ще не додана. Надішліть її план, і тут можна буде вибрати захватку.';
-        render(); return;
-      }
       if (isSlab && hasOther()) { $('msg').textContent = 'Плиту замовляють окремою заявкою. Спочатку відправте або зніміть вибір інших конструкцій.'; render(); return; }
       if (!isSlab && hasSlab()) { $('msg').textContent = 'У заявці плита. Її замовляють окремо: спочатку відправте плиту або зніміть її вибір.'; render(); return; }
     }
     $('msg').textContent = '';
     if (cur[id]) delete cur[id]; else cur[id] = 1;
+    if (cur[id] && f === 'r' && el.type === 'pk' && !pkVol(sec, el)) slabInput(el);
     if (tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
     render();
   }
+  // плита без схеми захваток: об'єм вписується вручну
+  function slabInput(el) {
+    var w = $('slabInfo'), k = sec + ':' + el.id; w.hidden = false; w.textContent = '';
+    w.appendChild(document.createTextNode((el.roof ? 'Покрівля ' : 'Плита ') + el.n + ', ' + sec + ': схеми захваток ще немає. Впишіть об\'єм, м³:'));
+    var inp = document.createElement('input'); inp.type = 'text'; inp.inputMode = 'decimal'; inp.placeholder = 'напр. 85,5'; inp.value = MV[k] || ''; inp.style.marginTop = '6px';
+    inp.addEventListener('input', function () { MV[k] = inp.value; render(); });
+    w.appendChild(inp); inp.focus();
+  }
+  function slabNoVol() { var r = false; SEC_LIST.forEach(function (s) { Object.keys(SEL[s].r).forEach(function (id) { var e = byR[id]; if (e.type === 'pk' && !volOf(s, 'r', e)) r = true; }); }); return r; }
 
   // ===== Заявка (усі секції, поверхи і розріз разом) =====
   function extraV() { var v = parseFloat(String($('xv').value).replace(',', '.')); return isFinite(v) ? v : 0; }
@@ -626,7 +633,11 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
         if (!cur[e.id]) return;
         if (e.type === 'sx') { sx.push(e.n); vsx += e.v; jj.push(e.full); }
         else if (e.type === 'sp') { sp.push(e.n); vsp += e.v; jj.push(e.full); }
-        else { var q = pkVol(s, e); lines.push('- Плита ' + e.n + ' (осі ' + q.ax + '): ' + fmt(q.v) + ' м³'); jj.push('Плита ' + e.n + ' (осі ' + q.ax + ')'); gv += q.v; }
+        else {
+          var q = pkVol(s, e), mv = volOf(s, 'r', e);
+          lines.push('- Плита ' + e.n + (q ? ' (осі ' + q.ax + ')' : '') + ': ' + (mv ? fmt(mv) : '___') + ' м³');
+          jj.push('Плита ' + e.n + (q ? ' (осі ' + q.ax + ')' : '')); gv += mv;
+        }
       });
       if (sx.length) lines.unshift('- Сходи ' + sx.join(', ') + ': ' + fmt(vsx) + ' м³');
       if (sp.length) lines.push('- Площадки СП-1 ' + sp.join(', ') + ': ' + fmt(vsp) + ' м³');
@@ -674,7 +685,7 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     if (TEST) head.unshift('ТЕСТ, не виконувати');
     return head.concat(['Конструкції:'], body).join('\n');
   }
-  function okSend(t) { return !!t && !!$('date').value && dateOk && !!timeStr() && !!WHO; }
+  function okSend(t) { return !!t && !!$('date').value && dateOk && !!timeStr() && !!WHO && !slabNoVol(); }
 
   function render() {
     var f = grp();
@@ -744,6 +755,7 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     if (busy) return;
     var msg = $('msg'), t = buildOrder();
     if (!t) { msg.textContent = 'Спочатку виберіть конструкції.'; return; }
+    if (slabNoVol()) { msg.textContent = 'Впишіть об\'єм плити.'; return; }
     if (fact) {
       if (!$('date').value) { msg.textContent = 'Виберіть дату бетонування.'; return; }
     } else {
@@ -758,7 +770,7 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     busy = true; msg.textContent = fact ? 'Записую в журнал...' : 'Надсилаю заявку...';
     if (tg) tg.MainButton.showProgress();
     fetch(url, { mode: 'no-cors' })
-      .then(function () { clearSel(); $('xv').value = ''; $('xt').value = ''; $('pump').value = ''; return keys.length ? saveMarks(keys, 'done', d) : null; })
+      .then(function () { clearSel(); MV = {}; $('slabInfo').hidden = true; $('xv').value = ''; $('xt').value = ''; $('pump').value = ''; return keys.length ? saveMarks(keys, 'done', d) : null; })
       .then(function () {
         msg.textContent = fact ? 'Записано в журнал як залиті ' + d + '. Заявка на завод не відправлялась.' : 'Заявку відправлено в групу. Конструкції позначено залитими ' + d + '.';
         if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
