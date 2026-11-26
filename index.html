@@ -585,8 +585,8 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     }
     if (!cur[id]) {
       var isSlab = f === 'r' && el.type === 'pk';
-      if (isSlab && hasOther()) { $('msg').textContent = 'Плиту замовляють окремою заявкою. Спочатку відправте або зніміть вибір інших конструкцій.'; render(); return; }
-      if (!isSlab && hasSlab()) { $('msg').textContent = 'У заявці плита. Її замовляють окремо: спочатку відправте плиту або зніміть її вибір.'; render(); return; }
+      if (isSlab && hasOther()) { warn('Плиту замовляють окремою заявкою. Спочатку відправте або зніміть вибір інших конструкцій.'); render(); return; }
+      if (!isSlab && hasSlab()) { warn('У заявці вже є плита, її замовляють окремо. Спочатку відправте плиту або зніміть її вибір.'); render(); return; }
     }
     $('msg').textContent = '';
     if (cur[id]) delete cur[id]; else cur[id] = 1;
@@ -594,6 +594,8 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     if (tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
     render();
   }
+  // попередження видно одразу (вгорі + вікно Telegram)
+  function warn(t) { $('info').textContent = '⚠️ ' + t; if (tg && tg.showAlert) { try { tg.showAlert(t); } catch (er) {} } if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning'); }
   // плита без схеми захваток: об'єм вписується вручну
   function slabInput(el) {
     var w = $('slabInfo'), k = sec + ':' + el.id; w.hidden = false; w.textContent = '';
