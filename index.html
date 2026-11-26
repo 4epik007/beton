@@ -247,6 +247,8 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
   var tg = window.Telegram && Telegram.WebApp;
   if (tg && !tg.initData) tg = null;
   if (tg) { tg.ready(); tg.expand(); }
+  // «пропуск» від Telegram: скрипт перевіряє підпис і чи людина в групі
+  var INITQ = '&init=' + encodeURIComponent(tg ? tg.initData : '');
 
   // ===== Загальне для схем =====
   function list(fill) {
@@ -595,9 +597,9 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
       .catch(function () { $('msg').textContent = 'Не вдалося завантажити позначки. Перевірте інтернет.'; });
   }
   function saveMarks(keys, s, d) {
-    var q = KEYQ + '&mode=mark&s=' + s + '&d=' + encodeURIComponent(d || '') + '&who=' + encodeURIComponent(WHO) +
+    var q = KEYQ + INITQ + '&fmt=json&mode=mark&s=' + s + '&d=' + encodeURIComponent(d || '') + '&who=' + encodeURIComponent(WHO) +
       '&ids=' + encodeURIComponent(keys.join(','));
-    return fetch(EXEC + q).then(function (r) { return r.json(); }).then(function (j) { ST = j || {}; render(); });
+    return fetch(EXEC + q).then(function (r) { return r.json(); }).then(function (j) { if (j && j.ok === false) throw new Error(j.msg); ST = j || {}; render(); });
   }
 
 
@@ -1058,19 +1060,19 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     var kv = [], ks = [];
     parts().forEach(function (p) { Object.keys(SEL[p.s][p.f]).forEach(function (id) { if (inK(p.f, id, p.k)) (p.k === 'p' ? ks : kv).push(key(p.s, p.f, id)); }); });
     var vd = dmy($('date').value), sd = dmy($('sdate').value), d = ks.length && !kv.length ? sd : vd;
-    var url = EXEC + KEYQ + (fact ? '&mode=fact' : '') + '&text=' + encodeURIComponent(t) + (J ? '&j=' + encodeURIComponent(J) : '') + (JVL.length > 1 ? '&jv=' + encodeURIComponent(JV) + '&jd=' + encodeURIComponent(JD) : '');
+    var url = EXEC + KEYQ + INITQ + '&fmt=json' + (fact ? '&mode=fact' : '') + '&text=' + encodeURIComponent(t) + (J ? '&j=' + encodeURIComponent(J) : '') + (JVL.length > 1 ? '&jv=' + encodeURIComponent(JV) + '&jd=' + encodeURIComponent(JD) : '');
     if (url.length > 7500) { msg.textContent = 'Заявка задовга для відправки. Скопіюйте текст і надішліть вручну.'; return; }
     busy = true; msg.textContent = fact ? 'Записую в журнал...' : 'Надсилаю заявку...';
     if (tg) tg.MainButton.showProgress();
-    fetch(url, { mode: 'no-cors' })
-      .then(function () { clearSel(); MV = {}; $('slabInfo').hidden = true; $('xv').value = ''; $('xt').value = ''; $('pump').value = ''; return kv.length ? saveMarks(kv, 'done', vd) : null; })
+    fetch(url).then(function (r) { return r.json(); })
+      .then(function (res) { if (!res || !res.ok) throw new Error((res && res.msg) || 'Помилка'); clearSel(); MV = {}; $('slabInfo').hidden = true; $('xv').value = ''; $('xt').value = ''; $('pump').value = ''; return kv.length ? saveMarks(kv, 'done', vd) : null; })
       .then(function () { return ks.length ? saveMarks(ks, 'done', sd) : null; })
       .then(function () {
         var dd = kv.length && ks.length ? 'вертикаль ' + vd + ', плита ' + sd : d;
         msg.textContent = fact ? 'Записано в журнал як залиті (' + dd + '). Заявка на завод не відправлялась.' : 'Заявку відправлено в групу. Конструкції позначено залитими (' + dd + ').';
         if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
       })
-      .catch(function () { msg.textContent = 'Помилка зв\'язку, спробуйте ще раз.'; })
+      .catch(function (err) { var t2 = err && err.message && err.message.indexOf('Немає доступу') >= 0 ? err.message : 'Помилка зв\'язку, спробуйте ще раз.'; msg.textContent = t2; warn(t2); })
       .then(function () { busy = false; if (tg) tg.MainButton.hideProgress(); render(); });
   }
   if (tg) tg.MainButton.onClick(function () { send(false); });
