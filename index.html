@@ -3,15 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Бетон Будинок 5 · Поверхи 2-4</title>
+<title>Бетон Будинок 5</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 :root {
   --bg: var(--tg-theme-secondary-bg-color, #EDEFF0); --surface: var(--tg-theme-bg-color, #FFFFFF);
   --ink: var(--tg-theme-text-color, #1C2226); --muted: var(--tg-theme-hint-color, #5C6870);
   --accent: var(--tg-theme-button-color, #1F5F8B); --on-accent: var(--tg-theme-button-text-color, #FFFFFF);
-  --line: #C7CDD1; --grid: #AEB6BC; --wall: #B5BDC3; --wall-stroke: #6F7B83;
+  --line: #C7CDD1; --grid: #AEB6BC; --wall: #B5BDC3; --wall-stroke: #6F7B83; --prefab: #8D9BA3;
   --sel: #F2992E; --done: #3E9A63; --fail: #D64541;
+  --c-sx1: #2F6FD6; --c-sx2: #2A2F33; --c-sx3: #E0B400; --c-sx4: #C23BA8; --c-sx5: #E8742A;
   --font-num: ui-monospace, Menlo, Consolas, monospace;
 }
 * { box-sizing: border-box; }
@@ -20,6 +21,8 @@ body { margin: 0; padding: 12px 12px 24px; background: var(--bg); color: var(--i
 h1 { font-size: 1.25rem; margin: 0; font-weight: 600; }
 .sub { color: var(--muted); margin: 2px 0 0; font-size: 0.8125rem; }
 h2 { font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; font-weight: 600; }
+h3 { font-size: 0.875rem; margin: 10px 0 6px; font-weight: 500; }
+h3 small { color: var(--muted); font-weight: 400; }
 .card { background: var(--surface); border-radius: 10px; padding: 12px; min-width: 0; }
 .top { position: sticky; top: 0; z-index: 9; display: grid; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
 .row { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; justify-content: space-between; }
@@ -27,29 +30,55 @@ h2 { font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; colo
 .tot small { font-size: 0.875rem; color: var(--muted); }
 .tot .lbl { font-size: 0.75rem; color: var(--muted); display: block; font-family: inherit; }
 .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.fls { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+.fls .btn { min-height: 36px; padding: 4px 0; font-size: 0.875rem; }
 .basket { display: flex; flex-wrap: wrap; gap: 6px; }
 .basket:empty { display: none; }
 .chip { border: 1px solid var(--sel); background: transparent; color: var(--ink); border-radius: 14px; padding: 3px 10px; font-size: 0.8125rem; cursor: pointer; }
 .chip.cur { background: var(--sel); color: #1C2226; }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 0.75rem; color: var(--muted); margin-bottom: 8px; }
 .legend i { display: inline-block; width: 11px; height: 11px; border: 1px solid var(--wall-stroke); margin-right: 4px; vertical-align: -1px; }
+.legend i.ln { height: 0; border-width: 0 0 2px; border-color: var(--prefab); width: 16px; vertical-align: 3px; }
 svg { display: block; width: 100%; height: auto; touch-action: manipulation; }
 .gl { stroke: var(--grid); stroke-width: 1.5; stroke-dasharray: 14 9; }
 .ax { fill: var(--muted); font-family: var(--font-num); text-anchor: middle; dominant-baseline: central; }
 .el { cursor: pointer; }
-.el .hit { fill: transparent; }
+.el .hit { fill: transparent; stroke: transparent; }
 .el .sh { fill: var(--wall); stroke: var(--wall-stroke); stroke-width: 1.5; }
 .el.done .sh { fill: var(--done); }
 .el.fail .sh { fill: var(--fail); }
 .el.sel .sh { fill: var(--sel); }
 .el.act .sh { stroke: var(--accent); stroke-width: 5; }
 .lbs { fill: var(--ink); font-weight: 600; text-anchor: middle; dominant-baseline: central; paint-order: stroke; stroke: var(--surface); stroke-width: 6px; pointer-events: none; }
+/* розріз */
+#svgR .el .sh { stroke-width: 1; }
+#svgR .el.act .sh { stroke-width: 3; }
+.rax { fill: var(--muted); font-family: var(--font-num); font-size: 11px; dominant-baseline: central; }
+.rst { fill: var(--muted); font-size: 12px; text-anchor: middle; dominant-baseline: central; }
+.tick { stroke: var(--wall-stroke); stroke-width: 1; }
+.axl { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
+.el .halo { fill: none; stroke: transparent; stroke-width: 14; stroke-linecap: round; }
+.el.sel .halo { stroke: var(--sel); }
+.el.done .halo { stroke: var(--done); }
+.el.fail .halo { stroke: var(--fail); }
+.el .ring { fill: none; stroke: transparent; stroke-width: 19; stroke-linecap: round; }
+.el.sel .ring, .el.done .ring, .el.fail .ring { stroke: var(--ink); }
+.fl { fill: none; stroke-width: 5; }
+.stp { fill: none; stroke-width: 1.5; }
+.rcs { display: flex; flex-wrap: wrap; gap: 5px; }
+.rc { font-family: var(--font-num); font-size: 0.8125rem; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; min-height: 34px; cursor: pointer; }
+.rc.sel { background: var(--sel); border-color: var(--sel); color: #1C2226; }
+.rc.done { background: var(--done); border-color: var(--done); color: #FFFFFF; }
+.rc.fail { background: var(--fail); border-color: var(--fail); color: #FFFFFF; }
+.rc.act { outline: 2px solid var(--accent); }
+.warn { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--sel); border-radius: 6px; padding: 8px 10px; margin: 10px 0 0; }
 button, input, select, textarea { font: inherit; color: var(--ink); }
 .btn { background: var(--accent); color: var(--on-accent); border: 0; border-radius: 8px; padding: 10px 12px; font-weight: 500; min-height: 44px; cursor: pointer; }
 .btn.alt { background: transparent; color: var(--ink); border: 1px solid var(--line); }
 .btn.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 .btn.small { min-height: 40px; padding: 6px 10px; }
-.btn .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--sel); margin-left: 5px; vertical-align: 1px; }
+.btn .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--sel); margin-left: 3px; vertical-align: 1px; }
 .form { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .form label { display: grid; gap: 4px; font-size: 0.8125rem; color: var(--muted); min-width: 0; }
 .form .wide { grid-column: 1 / -1; }
@@ -75,11 +104,11 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
       <button class="btn alt small" data-sec="С-5" type="button">С-5</button>
       <button class="btn alt small" data-sec="С-6" type="button">С-6</button>
     </div>
-    <div class="three" id="fls">
-      <button class="btn alt small" data-fl="2" type="button">2 поверх</button>
-      <button class="btn alt small" data-fl="3" type="button">3 поверх</button>
-      <button class="btn alt small" data-fl="4" type="button">4 поверх</button>
+    <div class="two">
+      <button class="btn alt small" data-view="f" type="button">Пілони і стіни</button>
+      <button class="btn alt small" data-view="r" type="button">Розріз: сходи, плити</button>
     </div>
+    <div class="fls" id="fls"></div>
     <div class="row">
       <div class="tot"><span class="lbl">Вибрано в заявку</span><span id="selVol">0,00</span> <small>м³</small></div>
       <button class="btn alt small" id="clear" type="button">Зняти вибір</button>
@@ -88,7 +117,7 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     <span class="note" id="info" style="margin:0">Торкніться елемента на схемі</span>
   </div>
 
-  <section class="card" aria-label="План поверху">
+  <section class="card" id="cardF" aria-label="План поверху">
     <div class="legend">
       <span><i style="background:var(--wall)"></i>не бетонували</span>
       <span><i style="background:var(--sel)"></i>вибрано</span>
@@ -97,6 +126,24 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
       <span>«2-2/5» = П-2-2, номер 5</span>
     </div>
     <svg id="svg" role="img" aria-label="План поверху"></svg>
+  </section>
+
+  <section class="card" id="cardR" aria-label="Розріз" hidden>
+    <div class="legend">
+      <span><i style="background:var(--wall)"></i>не бетонували</span>
+      <span><i style="background:var(--sel)"></i>вибрано</span>
+      <span><i style="background:var(--done)"></i>залито</span>
+      <span><i style="background:var(--fail)"></i>не залили</span>
+      <span><i class="ln"></i>збірні марші</span>
+    </div>
+    <h3 style="margin-top:0">Сходи <small>з -3,400 до +4,400, по 1,6 м³</small></h3>
+    <div class="rcs" id="chSx"></div>
+    <h3>Плити перекриття <small>плиту замовляють окремою заявкою</small></h3>
+    <div class="rcs" id="chPk"></div>
+    <p class="warn" id="slabInfo" hidden></p>
+    <h3>Площадки СП-1 <small>міжповерхові, по 0,75 м³</small></h3>
+    <div class="rcs" id="chSp"></div>
+    <svg id="svgR" role="img" aria-label="Розріз будинку" style="margin-top:12px"></svg>
   </section>
 
   <section class="card">
@@ -115,6 +162,10 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
       <label class="wide">Час подачі (обов’язково)
         <span style="display:flex;gap:6px"><select id="hh" aria-label="Година"></select><select id="mm" aria-label="Хвилини"></select></span>
       </label>
+      <label class="wide" id="pumpL" hidden>Бетононасос для плити, стріла
+        <select id="pump"><option value="">не потрібен</option><option value="28">28 м</option><option value="37">37 м</option><option value="42">42 м</option><option value="48">48 м</option><option value="52">52 м</option><option value="70">70 м</option></select>
+        <span id="pumpT" class="note" style="margin:0"></span>
+      </label>
       <label class="wide">Текст заявки
         <textarea id="order" readonly></textarea>
       </label>
@@ -126,7 +177,7 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     </div>
     <p class="ok" id="msg" role="status"></p>
     <p class="note" id="whoLine"></p>
-    <p class="note">Щоб додати в заявку іншу секцію, перемкніть секцію вгорі й виберіть елементи. Вибране з усіх секцій піде однією заявкою. Позначки «залито» спільні для всіх бригадирів.</p>
+    <p class="note">Щоб додати в заявку іншу секцію чи сходи, перемкніть секцію або розріз угорі й виберіть елементи. Усе вибране піде однією заявкою. Плита йде окремою заявкою. Позначки «залито» спільні для всіх бригадирів.</p>
   </section>
 </div>
 
@@ -136,7 +187,11 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
   var TEST = true; // true: заявка з поміткою «ТЕСТ», позначки з префіксом test:. Для роботи поставити false.
   var EXEC = 'https://script.google.com/macros/s/AKfycbzH8gF3gSr9xOH1TUk-IAcwo5jvA4V95D4t1dphKojBcbrZYmSM7UgNpKn-ayeQwjCApQ/exec';
   var KEYQ = '?key=beton5';
-  var SEC_LIST = ['С-4', 'С-5', 'С-6'], FLOORS = [2, 3, 4];
+  var SEC_LIST = ['С-4', 'С-5', 'С-6'], FLOORS = [];
+  for (var fi = 2; fi <= 17; fi++) FLOORS.push(fi);
+  var GROUPS = FLOORS.concat(['r']); // 'r' = розріз (сходи, плити, площадки)
+  // вже залиті (цоколь і плита -0,100) на С-4, С-5, С-6
+  var PRESET = { 'sx1': 1, 'sx2': 1, 'pk-100': 1 };
 
   var tg = window.Telegram && Telegram.WebApp;
   if (tg && !tg.initData) tg = null;
@@ -196,7 +251,7 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
   }
   var ROWS46 = [['Мс', 284], ['Лс', 338], ['Кс', 461], ['Ис', 583], ['Жс', 706], ['Єс', 828], ['Ес', 951], ['Дс', 1074], ['Гс', 1196], ['Вс', 1318], ['Бс', 1441], ['Ас', 1589]];
   var VIEW46 = { vb: '100 255 960 1360', colY: [270, 1625], colLab: 264, rowX: [110, 1040], rowLab: 1050, ax: 28, lbs: 30, pl: 20, pad: [8, 14] };
-  var SUB46 = 'вертикальні елементи, висота поверху 2,8 м, заливка в один етап. Схема умовна, положення знято з креслення на око.';
+  var SUB46 = 'типовий поверх 2–17, висота поверху 2,8 м, заливка в один етап. Схема умовна, положення знято з креслення на око.';
 
   var SECS = {};
 
@@ -259,9 +314,32 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
       E: E, COLS: COLS, ROWS: ROWS, dn: dn,
       view: { vb: XS + ' ' + VY + ' ' + VBW + ' ' + VH, par: 'none', aspect: VBW + ' / ' + Math.round(VH * 1.3),
         colY: [90, 885], colLab: 905, rowX: [F(250), F(1790)], rowLab: 236, ax: 26, lbs: 26, pl: 22, pad: [10, 20] },
-      sub: 'вертикальні елементи на відм. +4,400, +7,400, +10,400, висота поверху 2,8 м, заливка в один етап. Положення знято з креслення на око.'
+      sub: 'типовий поверх 2–17, висота поверху 2,8 м, заливка в один етап. Положення знято з креслення на око.'
     };
   })();
+
+  // ===== Розріз (з артефакту «Розріз будинку») =====
+  function mark3(z) { return (z < 0 ? '-' : '+') + Math.abs(z).toFixed(3).replace('.', ','); }
+  function zkey(z) { return Math.round(z * 1000); }
+  var RE = [];
+  [['Сх1', 'sx1', -1.316, -3.4, '--c-sx1', 2.5, 0], ['Сх2', 'sx2', -1.316, -0.1, '--c-sx2', -2.5, 2.5], ['Сх3', 'sx3', 1.93, -0.1, '--c-sx3', 2.5, -2.5],
+   ['Сх4', 'sx4', 1.93, 2.98, '--c-sx4', -2.5, 2.5], ['Сх5', 'sx5', 4.4, 2.98, '--c-sx5', 0, -2.5]].forEach(function (s) {
+    RE.push({ id: s[1], type: 'sx', n: s[0], z1: s[2], z2: s[3], col: s[4], oa: s[5], ob: s[6], v: 1.6,
+      full: s[0] + ' (' + mark3(Math.min(s[2], s[3])) + '…' + mark3(Math.max(s[2], s[3])) + ')' });
+  });
+  RE.push({ id: 'pk-100', type: 'pk', z: -0.1, n: mark3(-0.1), full: 'Перекриття ' + mark3(-0.1) });
+  for (var ri = 0; ri <= 16; ri++) {
+    var rz = Math.round((4.4 + 3 * ri) * 1000) / 1000;
+    RE.push({ id: 'pk' + zkey(rz), type: 'pk', z: rz, roof: ri === 16, n: mark3(rz), full: (ri === 16 ? 'Покрівля ' : 'Перекриття ') + mark3(rz) });
+  }
+  RE.push({ id: 'pk55300', type: 'pk', z: 55.3, n: mark3(55.3), full: 'Плита сходової клітки ' + mark3(55.3) });
+  for (var rj = 0; rj < 16; rj++) {
+    var rzz = Math.round((5.98 + 3 * rj) * 1000) / 1000;
+    RE.push({ id: 'sp' + zkey(rzz), type: 'sp', z: rzz, v: 0.75, n: mark3(rzz), full: 'СП-1 ' + mark3(rzz) });
+  }
+  // об'єми плит, де вже є (одна захватка)
+  var PKV = { 'С-5': { pk4400: { v: 80.5, ax: '1с-11с/Ас-Дс' }, pk7400: { v: 81.86, ax: '1с-11с/Ас-Дс' } } };
+  function pkVol(s, e) { var m = PKV[s]; return m && m[e.id] ? m[e.id] : null; }
 
   // ===== Допоміжне =====
   var NS = 'http://www.w3.org/2000/svg';
@@ -275,17 +353,26 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     return n;
   }
   function each(sel, fn) { Array.prototype.forEach.call(document.querySelectorAll(sel), fn); }
-  function find(sec, id) { return SECS[sec].E.filter(function (x) { return x.id === id; })[0]; }
+  function elems(s, f) { return f === 'r' ? RE : SECS[s].E; }
+  function find(s, f, id) { return elems(s, f).filter(function (x) { return x.id === id; })[0]; }
+  function volOf(s, f, e) { if (f === 'r' && e.type === 'pk') { var q = pkVol(s, e); return q ? q.v : 0; } return e.v; }
+  function otm(f) { return '+' + (4.4 + 3 * (f - 2)).toFixed(3).replace('.', ','); }
 
   // ===== Стан =====
-  var ST = {};  // позначки з таблиці: { '<секція>:<поверх>:<id>': {s, d, who} }
-  var SEL = {}; // вибір у заявку (тільки на цьому телефоні): SEL['С-6'][2]['П-2-2_5'] = 1
-  SEC_LIST.forEach(function (s) { SEL[s] = {}; FLOORS.forEach(function (f) { SEL[s][f] = {}; }); });
-  var sec = 'С-6', floor = 2, active = null, dateOk = false, busy = false, nodes = {};
+  var ST = {};  // позначки з таблиці: { '<секція>:<поверх або r>:<id>': {s, d, who} }
+  var SEL = {}; // вибір у заявку (тільки на цьому телефоні)
+  SEC_LIST.forEach(function (s) { SEL[s] = {}; GROUPS.forEach(function (f) { SEL[s][f] = {}; }); });
+  var sec = 'С-6', floor = 2, view = 'f', active = null, dateOk = false, busy = false, nodes = {}, rnodes = {}, rchips = {};
+  function grp() { return view === 'r' ? 'r' : floor; }
   function key(s, f, id) { return (TEST ? 'test:' : '') + s + ':' + f + ':' + id; }
-  function mark(id) { return ST[key(sec, floor, id)] || null; }
-  function stateOf(id) { if (SEL[sec][floor][id]) return 'sel'; var s = mark(id); return s ? s.s : ''; }
+  function markOf(s, f, id) {
+    var m = ST[key(s, f, id)];
+    if (m) return m;
+    return f === 'r' && PRESET[id] ? { s: 'done', d: '' } : null;
+  }
+  function stateOf(s, f, id) { if (SEL[s][f][id]) return 'sel'; var m = markOf(s, f, id); return m ? m.s : ''; }
   function count(s, f) { return Object.keys(SEL[s][f]).length; }
+  function clearSel() { SEC_LIST.forEach(function (s) { GROUPS.forEach(function (f) { SEL[s][f] = {}; }); }); }
 
   function load() {
     return fetch(EXEC + KEYQ + '&mode=state').then(function (r) { return r.json(); })
@@ -298,7 +385,14 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     return fetch(EXEC + q).then(function (r) { return r.json(); }).then(function (j) { ST = j || {}; render(); });
   }
 
-  // ===== Малювання схеми поточної секції =====
+  // ===== Кнопки поверхів =====
+  FLOORS.forEach(function (f) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'btn alt'; b.setAttribute('data-fl', f);
+    b.addEventListener('click', function () { go(sec, f, 'f'); });
+    $('fls').appendChild(b);
+  });
+
+  // ===== Малювання схеми поверху поточної секції =====
   var svg = $('svg');
   function draw() {
     var S = SECS[sec], V = S.view;
@@ -331,8 +425,83 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
       g.addEventListener('click', function () { act(e.id); });
       nodes[e.id] = g;
     });
-    $('sub').textContent = 'Будинок №5, секція ' + sec + ', ' + S.sub;
   }
+
+  // ===== Малювання розрізу (один раз) =====
+  (function drawR() {
+    var X = { ax: 50, lw0: 56, lw1: 62, s0: 62, s1: 150, c0: 150, c1: 158, f0: 162, f1: 236, l0: 236, l1: 272, r0: 272, r1: 278, t: 282 };
+    var BASE = 1314, Y = {}, y = BASE, stepH = [0, 46, 40, 44, 30, 34];
+    [-3.4, -1.316, -0.1, 1.93, 2.98, 4.4].forEach(function (z, i) { if (i) y -= stepH[i]; Y[zkey(z)] = y; });
+    var up = [];
+    for (var k = 0; k < 16; k++) { up.push(Math.round((5.98 + 3 * k) * 1000) / 1000); up.push(Math.round((7.4 + 3 * k) * 1000) / 1000); }
+    up.forEach(function (z) { y -= 30; Y[zkey(z)] = y; });
+    y -= 56; Y[zkey(55.3)] = y;
+    var TOP = y;
+    function yy(z) { return Y[zkey(z)]; }
+    var sv = $('svgR');
+    sv.setAttribute('viewBox', '0 ' + (TOP - 20) + ' 380 ' + (BASE + 50 - TOP + 20));
+    function txt(p, cls, x, yv, s, anchor) { var t = mk('text', { x: x, y: yv, 'class': cls }, p); if (anchor) t.setAttribute('text-anchor', anchor); t.textContent = s; return t; }
+    var baseY = BASE + 14;
+    mk('rect', { x: X.lw0, y: yy(52.4) - 4, width: X.lw1 - X.lw0, height: baseY - yy(52.4) + 4, fill: 'var(--wall)' }, sv);
+    mk('rect', { x: X.c0, y: TOP - 4, width: X.c1 - X.c0, height: baseY - TOP + 4, fill: 'var(--wall)' }, sv);
+    mk('rect', { x: X.r0, y: TOP - 4, width: X.r1 - X.r0, height: baseY - TOP + 4, fill: 'var(--wall)' }, sv);
+    mk('rect', { x: X.lw0 - 6, y: baseY, width: X.r1 - X.lw0 + 12, height: 10, fill: 'var(--wall)' }, sv);
+    var leftZ = [-1.316, 4.4, -0.1, 52.4, 55.3], rightZ = [-3.4, -0.1, 2.98];
+    for (var m = 0; m < 16; m++) { leftZ.push(Math.round((7.4 + 3 * m) * 1000) / 1000); rightZ.push(Math.round((5.98 + 3 * m) * 1000) / 1000); }
+    leftZ = leftZ.filter(function (z, i, a) { return a.indexOf(z) === i; });
+    mk('line', { x1: X.ax + 6, y1: TOP, x2: X.ax + 6, y2: BASE, 'class': 'axl' }, sv);
+    leftZ.forEach(function (z) { mk('line', { x1: X.ax + 2, y1: yy(z), x2: X.ax + 6, y2: yy(z), 'class': 'tick' }, sv); txt(sv, 'rax', X.ax, yy(z), mark3(z), 'end'); });
+    mk('line', { x1: X.t - 2, y1: TOP, x2: X.t - 2, y2: BASE, 'class': 'axl' }, sv);
+    rightZ.forEach(function (z) { mk('line', { x1: X.t - 2, y1: yy(z), x2: X.t + 2, y2: yy(z), 'class': 'tick' }, sv); txt(sv, 'rax', X.t + 6, yy(z), (z >= 5.9 ? 'СП-1 ' : '') + mark3(z), 'start'); });
+    txt(sv, 'rst', 106, (yy(-3.4) + yy(-0.1)) / 2, 'цоколь');
+    txt(sv, 'rst', 106, (yy(-0.1) + yy(4.4)) / 2, '1-й поверх');
+    for (var n = 2; n <= 17; n++) { var za = Math.round((4.4 + 3 * (n - 2)) * 1000) / 1000; txt(sv, 'rst', 106, (yy(za) + yy(Math.round((za + 3) * 1000) / 1000)) / 2, n + '-й поверх'); }
+    txt(sv, 'rst', 215, (yy(52.4) + yy(55.3)) / 2 - 7, 'покрівельний');
+    txt(sv, 'rst', 215, (yy(52.4) + yy(55.3)) / 2 + 8, 'поверх');
+    // збірні марші вище +4,400
+    var upZ = [4.4].concat(up);
+    for (var f = 0; f < upZ.length - 1; f++) {
+      var left = f % 2 === 0, xa = left ? X.f0 : X.f1, xb = left ? X.f1 : X.f0, ya = yy(upZ[f]), yb = yy(upZ[f + 1]);
+      var gp = mk('g', {}, sv);
+      mk('path', { d: 'M' + xa + ' ' + ya + ' L' + xb + ' ' + yb, 'class': 'fl', stroke: 'var(--prefab)', 'stroke-width': 1.5 }, gp);
+      var dd = 'M' + xa + ' ' + ya;
+      for (var q = 1; q <= 5; q++) dd += ' H' + (xa + (xb - xa) * q / 5) + ' V' + (ya + (yb - ya) * q / 5);
+      mk('path', { d: dd, 'class': 'stp', stroke: 'var(--prefab)' }, gp);
+    }
+    RE.forEach(function (e) {
+      var g = mk('g', { 'class': 'el', role: 'button' }, sv);
+      if (e.type === 'pk') {
+        var cx0 = e.z === 55.3 ? X.c1 : X.s0, cx1 = e.z === 55.3 ? X.r0 : X.s1, hx1 = e.z === 55.3 ? X.r0 : X.c1;
+        mk('rect', { x: cx0, y: yy(e.z) - 4, width: cx1 - cx0, height: 8, 'class': 'sh' }, g);
+        mk('rect', { x: cx0, y: yy(e.z) - 13, width: hx1 - cx0, height: 26, 'class': 'hit' }, g);
+      } else if (e.type === 'sp') {
+        mk('rect', { x: X.l0, y: yy(e.z) - 4, width: X.l1 - X.l0, height: 8, 'class': 'sh' }, g);
+        mk('rect', { x: X.l0, y: yy(e.z) - 13, width: X.r0 - X.l0, height: 26, 'class': 'hit' }, g);
+      } else {
+        var xa2 = X.f0, xb2 = X.f1, ya2 = yy(e.z1) + e.oa, yb2 = yy(e.z2) + e.ob;
+        var full = 'M' + X.c1 + ' ' + ya2 + ' H' + xa2 + ' L' + xb2 + ' ' + yb2 + ' H' + X.r0;
+        mk('path', { d: full, 'class': 'ring' }, g);
+        mk('path', { d: full, 'class': 'halo' }, g);
+        mk('path', { d: full, 'class': 'fl', stroke: 'var(' + e.col + ')' }, g);
+        var d2 = 'M' + xa2 + ' ' + ya2;
+        for (var q2 = 1; q2 <= 5; q2++) d2 += ' H' + (xa2 + (xb2 - xa2) * q2 / 5) + ' V' + (ya2 + (yb2 - ya2) * q2 / 5);
+        mk('path', { d: d2, 'class': 'stp', stroke: 'var(' + e.col + ')' }, g);
+        mk('path', { d: full, fill: 'none', stroke: 'transparent', 'stroke-width': 22 }, g);
+        txt(g, 'lbs', (xa2 + xb2) / 2 - 4, (ya2 + yb2) / 2 - 15, e.n).setAttribute('style', 'font-size:12px;stroke-width:3px');
+      }
+      g.addEventListener('click', function () { act(e.id); });
+      rnodes[e.id] = g;
+    });
+    // кнопки-чипи
+    [['sx', 'chSx'], ['pk', 'chPk'], ['sp', 'chSp']].forEach(function (p) {
+      RE.filter(function (e) { return e.type === p[0]; }).forEach(function (e) {
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'rc';
+        b.textContent = e.roof ? e.n + ' покр.' : e.n;
+        b.addEventListener('click', function () { act(e.id); });
+        $(p[1]).appendChild(b); rchips[e.id] = b;
+      });
+    });
+  })();
 
   // ===== Бригадир =====
   var u = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
@@ -368,64 +537,105 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     r.appendChild(no); r.appendChild(ok); d.appendChild(r); document.body.appendChild(d);
   }
 
+  // плита — окремою заявкою
+  function hasSlab() { var r = false; SEC_LIST.forEach(function (s) { Object.keys(SEL[s].r).forEach(function (id) { if (id.indexOf('pk') === 0) r = true; }); }); return r; }
+  function hasOther() {
+    var r = false;
+    SEC_LIST.forEach(function (s) { GROUPS.forEach(function (f) { Object.keys(SEL[s][f]).forEach(function (id) { if (!(f === 'r' && id.indexOf('pk') === 0)) r = true; }); }); });
+    return r;
+  }
+
   function act(id) {
+    var f = grp(), el = find(sec, f, id), m = markOf(sec, f, id), cur = SEL[sec][f], ev = volOf(sec, f, el);
     active = id;
-    var el = find(sec, id), s = mark(id), cur = SEL[sec][floor];
-    $('info').textContent = sec + ', ' + el.name + ', осі ' + el.axs + ', ' + fmt(el.v) + ' м³' +
-      (s && s.s === 'done' ? ' · залито ' + (s.d || '') + (s.who ? ' (' + s.who + ')' : '') : '');
-    if (s && s.s === 'done' && !cur[id]) {
-      var k = key(sec, floor, id);
-      askFail(sec + ', ' + el.name + ', ' + floor + '-й поверх,', function () {
+    var where = f === 'r' ? sec + ', ' + el.full : sec + ', ' + floor + ' пов., ' + el.name + ', осі ' + el.axs;
+    $('info').textContent = where + (ev ? ', ' + fmt(ev) + ' м³' : '') +
+      (m && m.s === 'done' ? ' · залито' + (m.d ? ' ' + m.d : '') + (m.who ? ' (' + m.who + ')' : '') : '');
+    $('slabInfo').hidden = true;
+    if (m && m.s === 'done' && !cur[id]) {
+      var k = key(sec, f, id);
+      askFail(where + ',', function () {
         $('msg').textContent = 'Записую...';
-        saveMarks([k], 'fail', '').then(function () { $('msg').textContent = el.name + ' позначено «не залили».'; })
+        saveMarks([k], 'fail', '').then(function () { $('msg').textContent = (el.name || el.full) + ' позначено «не залили».'; })
           .catch(function () { $('msg').textContent = 'Помилка зв\'язку, спробуйте ще раз.'; });
-      }, s.d);
+      }, m.d);
       render();
       return;
     }
+    if (!cur[id]) {
+      var isSlab = f === 'r' && el.type === 'pk';
+      if (isSlab && !pkVol(sec, el)) {
+        var w = $('slabInfo'); w.hidden = false;
+        w.textContent = (el.roof ? 'Покрівля ' : 'Плита ') + el.n + ', ' + sec + ': схема захваток цієї плити ще не додана. Надішліть її план, і тут можна буде вибрати захватку.';
+        render(); return;
+      }
+      if (isSlab && hasOther()) { $('msg').textContent = 'Плиту замовляють окремою заявкою. Спочатку відправте або зніміть вибір інших конструкцій.'; render(); return; }
+      if (!isSlab && hasSlab()) { $('msg').textContent = 'У заявці плита. Її замовляють окремо: спочатку відправте плиту або зніміть її вибір.'; render(); return; }
+    }
+    $('msg').textContent = '';
     if (cur[id]) delete cur[id]; else cur[id] = 1;
     if (tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
     render();
   }
 
-  // ===== Заявка (усі секції й поверхи разом) =====
+  // ===== Заявка (усі секції, поверхи і розріз разом) =====
   function extraV() { var v = parseFloat(String($('xv').value).replace(',', '.')); return isFinite(v) ? v : 0; }
-  function objOf(s, f) { return 'Будинок №5, секція ' + s + ', ' + f + '-й поверх'; }
+  function objOf(s, f) { return 'Будинок №5, секція ' + s + (f === 'r' ? '' : ', ' + f + '-й поверх'); }
   function dmy(v) { return v ? v.split('-').reverse().join('.') : ''; }
   function timeStr() { return $('hh').value && $('mm').value ? $('hh').value + ':' + $('mm').value : ''; }
+  function pumpTime() {
+    var t = timeStr(); if (!t) return '__:__';
+    var p = t.split(':'), m = Math.max(0, Number(p[0]) * 60 + Number(p[1]) - 60);
+    return pad2(Math.floor(m / 60)) + ':' + pad2(m % 60);
+  }
   function parts() { // непорожні групи: [{s, f}]
     var P = [];
-    SEC_LIST.forEach(function (s) { FLOORS.forEach(function (f) { if (count(s, f)) P.push({ s: s, f: f }); }); });
+    SEC_LIST.forEach(function (s) { GROUPS.forEach(function (f) { if (count(s, f)) P.push({ s: s, f: f }); }); });
     return P;
   }
   function selSum() {
     var sum = 0;
-    parts().forEach(function (p) { SECS[p.s].E.forEach(function (e) { if (SEL[p.s][p.f][e.id]) sum += e.v; }); });
+    parts().forEach(function (p) { elems(p.s, p.f).forEach(function (e) { if (SEL[p.s][p.f][e.id]) sum += volOf(p.s, p.f, e); }); });
     return sum;
   }
+  var J = '', JV = '', JVL = [];
   function groupLines(s, f, jr) {
-    var S = SECS[s], cur = SEL[s][f], groups = {}, ord = [], lines = [], pn = 0, pv = 0, rest = [], jj = [];
-    S.E.forEach(function (e) {
-      if (!cur[e.id]) return;
-      if (!groups[e.m]) { groups[e.m] = { n: 0, v: 0, axs: [] }; ord.push(e.m); }
-      var g = groups[e.m]; g.n += 1; g.v += e.v; g.axs.push(e.axs);
-    });
-    ord.forEach(function (m) {
-      var g = groups[m];
-      jj.push(S.dn(m) + ' (' + g.axs.join(', ') + ')');
-      if (/^П-/.test(m)) { pn += g.n; pv += g.v; } else rest.push(m);
-    });
-    if (pn) lines.push('- Пілони ×' + pn + ': ' + fmt(pv) + ' м³');
-    rest.forEach(function (m) { var g = groups[m]; lines.push('- ' + S.dn(m) + (g.n > 1 ? ' ×' + g.n : '') + ': ' + fmt(g.v) + ' м³'); });
+    var cur = SEL[s][f], lines = [], jj = [], gv = 0;
+    if (f === 'r') {
+      var sx = [], vsx = 0, sp = [], vsp = 0;
+      RE.forEach(function (e) {
+        if (!cur[e.id]) return;
+        if (e.type === 'sx') { sx.push(e.n); vsx += e.v; jj.push(e.full); }
+        else if (e.type === 'sp') { sp.push(e.n); vsp += e.v; jj.push(e.full); }
+        else { var q = pkVol(s, e); lines.push('- Плита ' + e.n + ' (осі ' + q.ax + '): ' + fmt(q.v) + ' м³'); jj.push('Плита ' + e.n + ' (осі ' + q.ax + ')'); gv += q.v; }
+      });
+      if (sx.length) lines.unshift('- Сходи ' + sx.join(', ') + ': ' + fmt(vsx) + ' м³');
+      if (sp.length) lines.push('- Площадки СП-1 ' + sp.join(', ') + ': ' + fmt(vsp) + ' м³');
+      gv += vsx + vsp;
+    } else {
+      var S = SECS[s], groups = {}, ord = [], pn = 0, pv = 0, rest = [];
+      S.E.forEach(function (e) {
+        if (!cur[e.id]) return;
+        if (!groups[e.m]) { groups[e.m] = { n: 0, v: 0, axs: [] }; ord.push(e.m); }
+        var g = groups[e.m]; g.n += 1; g.v += e.v; g.axs.push(e.axs);
+      });
+      ord.forEach(function (m) {
+        var g = groups[m]; gv += g.v;
+        jj.push(S.dn(m) + ' (' + g.axs.join(', ') + ')');
+        if (/^П-/.test(m)) { pn += g.n; pv += g.v; } else rest.push(m);
+      });
+      if (pn) lines.push('- Пілони ×' + pn + ': ' + fmt(pv) + ' м³');
+      rest.forEach(function (m) { var g = groups[m]; lines.push('- ' + S.dn(m) + (g.n > 1 ? ' ×' + g.n : '') + ': ' + fmt(g.v) + ' м³'); });
+    }
     jr.push(objOf(s, f) + ': ' + jj.join('; '));
-    var gv = 0; ord.forEach(function (m) { gv += groups[m].v; }); JVL.push(fmt(gv));
+    JVL.push(fmt(gv));
     return lines;
   }
-  var J = '', JV = '', JVL = [];
+  function groupTitle(p) { return p.f === 'r' ? p.s + ', сходи / площадки:' : p.s + ', ' + p.f + '-й поверх:'; }
   function buildOrder() {
     var P = parts(), jr = [], body = []; JVL = [];
     var xv = extraV(), xt = $('xt').value.trim();
-    if (!P.length && !xv) { J = ''; return ''; }
+    if (!P.length && !xv) { J = ''; JV = ''; return ''; }
     var objLine;
     if (P.length === 1) {
       objLine = objOf(P[0].s, P[0].f);
@@ -433,16 +643,14 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     } else if (P.length > 1) {
       var secs = []; P.forEach(function (p) { if (secs.indexOf(p.s) < 0) secs.push(p.s); });
       objLine = 'Будинок №5, ' + (secs.length > 1 ? 'секції ' : 'секція ') + secs.join(', ');
-      P.forEach(function (p) {
-        body.push(p.s + ', ' + p.f + '-й поверх:');
-        body = body.concat(groupLines(p.s, p.f, jr));
-      });
+      P.forEach(function (p) { body.push(groupTitle(p)); body = body.concat(groupLines(p.s, p.f, jr)); });
     } else {
-      objLine = objOf(sec, floor);
+      objLine = objOf(sec, grp());
     }
     if (xv) body.push('- Додатковий бетон' + (xt ? ' (' + xt + ')' : '') + ': ' + fmt(xv) + ' м³');
     J = jr.join(' | '); JV = JVL.join('|');
     var head = ['Заявка на бетон: ' + fmt(selSum() + xv) + ' м³', 'Об\'єкт: ' + objLine, 'Подача: ' + (dmy($('date').value) || '___') + ', ' + (timeStr() || '__:__')];
+    if (hasSlab() && $('pump').value) head.push('Бетононасос: стріла ' + $('pump').value + ' м, подача насоса ' + pumpTime());
     if (WHO) head.push('Бригадир: ' + WHO);
     if (TEST) head.unshift('ТЕСТ, не виконувати');
     return head.concat(['Конструкції:'], body).join('\n');
@@ -450,34 +658,53 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
   function okSend(t) { return !!t && !!$('date').value && dateOk && !!timeStr() && !!WHO; }
 
   function render() {
-    SECS[sec].E.forEach(function (e) {
-      var s = stateOf(e.id);
-      if (nodes[e.id]) nodes[e.id].setAttribute('class', 'el' + (s ? ' ' + s : '') + (e.id === active ? ' act' : ''));
-    });
+    var f = grp();
+    if (view === 'f') {
+      SECS[sec].E.forEach(function (e) {
+        var s = stateOf(sec, floor, e.id);
+        if (nodes[e.id]) nodes[e.id].setAttribute('class', 'el' + (s ? ' ' + s : '') + (e.id === active ? ' act' : ''));
+      });
+    } else {
+      RE.forEach(function (e) {
+        var s = stateOf(sec, 'r', e.id), a = e.id === active ? ' act' : '';
+        rnodes[e.id].setAttribute('class', 'el' + (s ? ' ' + s : '') + a);
+        rchips[e.id].className = 'rc' + (s ? ' ' + s : '') + a;
+      });
+    }
+    $('cardF').hidden = view !== 'f'; $('cardR').hidden = view !== 'r'; $('fls').hidden = view !== 'f';
     var total = selSum() + extraV();
     $('selVol').textContent = fmt(total);
-    $('h1').textContent = sec + ' · Поверх ' + floor;
+    $('h1').textContent = sec + ' · ' + (view === 'r' ? 'Розріз' : 'Поверх ' + floor + ' (відм. ' + otm(floor) + ')');
+    $('sub').textContent = 'Будинок №5, секція ' + sec + ', ' + (view === 'r' ? 'сходи, плити перекриття, площадки. Типовий розріз, не в масштабі.' : SECS[sec].sub);
     each('[data-sec]', function (b) {
-      var s = b.getAttribute('data-sec'), n = 0; FLOORS.forEach(function (f) { n += count(s, f); });
+      var s = b.getAttribute('data-sec'), n = 0; GROUPS.forEach(function (g) { n += count(s, g); });
       b.classList.toggle('on', s === sec);
       b.innerHTML = s + (n && s !== sec ? '<span class="dot"></span>' : '');
     });
+    each('[data-view]', function (b) {
+      var v = b.getAttribute('data-view'), n = v === 'r' ? count(sec, 'r') : 0;
+      if (v === 'f') FLOORS.forEach(function (g) { n += count(sec, g); });
+      b.classList.toggle('on', v === view);
+      b.innerHTML = (v === 'r' ? 'Розріз: сходи, плити' : 'Пілони і стіни') + (n && v !== view ? '<span class="dot"></span>' : '');
+    });
     each('[data-fl]', function (b) {
-      var f = Number(b.getAttribute('data-fl'));
-      b.classList.toggle('on', f === floor);
-      b.innerHTML = f + ' поверх' + (count(sec, f) && f !== floor ? '<span class="dot"></span>' : '');
+      var g = Number(b.getAttribute('data-fl'));
+      b.classList.toggle('on', g === floor);
+      b.innerHTML = g + (count(sec, g) && g !== floor ? '<span class="dot"></span>' : '');
     });
     var bk = $('basket'); bk.innerHTML = '';
     var P = parts();
-    if (P.length > 1 || (P.length === 1 && (P[0].s !== sec || P[0].f !== floor))) {
+    if (P.length > 1 || (P.length === 1 && (P[0].s !== sec || P[0].f !== f))) {
       P.forEach(function (p) {
         var c = document.createElement('button'); c.type = 'button';
-        c.className = 'chip' + (p.s === sec && p.f === floor ? ' cur' : '');
-        c.textContent = p.s + ', ' + p.f + ' пов.: ' + count(p.s, p.f) + ' ел.';
-        c.addEventListener('click', function () { go(p.s, p.f); });
+        c.className = 'chip' + (p.s === sec && p.f === f ? ' cur' : '');
+        c.textContent = p.s + ', ' + (p.f === 'r' ? 'розріз' : p.f + ' пов.') + ': ' + count(p.s, p.f) + ' ел.';
+        c.addEventListener('click', function () { if (p.f === 'r') go(p.s, floor, 'r'); else go(p.s, p.f, 'f'); });
         bk.appendChild(c);
       });
     }
+    $('pumpL').hidden = !hasSlab();
+    $('pumpT').textContent = hasSlab() && $('pump').value ? 'насос на об’єкті о ' + pumpTime() + ' (за годину до бетону)' : '';
     var t = buildOrder();
     $('order').value = t || 'Виберіть елементи на схемі, і тут з\'явиться готова заявка.';
     var ok = okSend(t);
@@ -491,10 +718,10 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     $('fact').style.opacity = t && $('date').value ? '' : '0.45';
   }
 
-  function go(s, f) {
+  function go(s, f, v) {
     var redraw = s !== sec;
-    sec = s; floor = f; active = null;
-    $('info').textContent = 'Торкніться елемента на схемі';
+    sec = s; floor = f; view = v || view; active = null;
+    $('info').textContent = 'Торкніться елемента на схемі'; $('slabInfo').hidden = true;
     if (redraw) draw();
     render();
   }
@@ -518,11 +745,7 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     busy = true; msg.textContent = fact ? 'Записую в журнал...' : 'Надсилаю заявку...';
     if (tg) tg.MainButton.showProgress();
     fetch(url, { mode: 'no-cors' })
-      .then(function () {
-        SEC_LIST.forEach(function (s) { FLOORS.forEach(function (f) { SEL[s][f] = {}; }); });
-        $('xv').value = ''; $('xt').value = '';
-        return keys.length ? saveMarks(keys, 'done', d) : null;
-      })
+      .then(function () { clearSel(); $('xv').value = ''; $('xt').value = ''; $('pump').value = ''; return keys.length ? saveMarks(keys, 'done', d) : null; })
       .then(function () {
         msg.textContent = fact ? 'Записано в журнал як залиті ' + d + '. Заявка на завод не відправлялась.' : 'Заявку відправлено в групу. Конструкції позначено залитими ' + d + '.';
         if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
@@ -539,11 +762,8 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     function fb() { ta.focus(); ta.select(); msg.textContent = 'Текст виділено, скопіюйте його через меню телефону.'; }
     try { navigator.clipboard.writeText(ta.value).then(function () { msg.textContent = 'Скопійовано.'; }, fb); } catch (er) { fb(); }
   });
-  $('clear').addEventListener('click', function () {
-    SEC_LIST.forEach(function (s) { FLOORS.forEach(function (f) { SEL[s][f] = {}; }); });
-    $('xv').value = ''; $('xt').value = ''; render();
-  });
-  ['xv', 'xt', 'date'].forEach(function (id) { $(id).addEventListener('input', render); $(id).addEventListener('change', render); });
+  $('clear').addEventListener('click', function () { clearSel(); $('xv').value = ''; $('xt').value = ''; $('msg').textContent = ''; render(); });
+  ['xv', 'xt', 'date', 'pump'].forEach(function (id) { $(id).addEventListener('input', render); $(id).addEventListener('change', render); });
 
   // ===== Дата і час =====
   function setDay(k) { var d2 = new Date(); d2.setDate(d2.getDate() + k); $('date').value = d2.getFullYear() + '-' + pad2(d2.getMonth() + 1) + '-' + pad2(d2.getDate()); }
@@ -563,17 +783,18 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
   function syncTime() { if (hsel.value && !msel.value) msel.value = '00'; if (hsel.value === '18') msel.value = '00'; render(); }
   hsel.addEventListener('change', syncTime); msel.addEventListener('change', syncTime);
 
-  // ===== Секція і поверх: кнопки, #s4-poverh-3 або startapp=s4-3 =====
-  each('[data-sec]', function (b) { b.addEventListener('click', function () { go(b.getAttribute('data-sec'), floor); }); });
-  each('[data-fl]', function (b) { b.addEventListener('click', function () { go(sec, Number(b.getAttribute('data-fl'))); }); });
+  // ===== Секція, вид, поверх: кнопки, #s4-7, #s6-r або startapp=s4-7 =====
+  each('[data-sec]', function (b) { b.addEventListener('click', function () { go(b.getAttribute('data-sec'), floor, view); }); });
+  each('[data-view]', function (b) { b.addEventListener('click', function () { go(sec, floor, b.getAttribute('data-view')); }); });
   function fromStr(str) {
-    var ms = /s([456])/.exec(str || ''), mf = /(?:poverh-|-)([234])$/.exec(str || '');
+    var ms = /s([456])/.exec(str || ''), mf = /(?:poverh-|-)(\d{1,2})$/.exec(str || '');
     if (ms) sec = 'С-' + ms[1];
-    if (mf) floor = Number(mf[1]);
+    if (/-r$/.test(str || '')) view = 'r';
+    else if (mf && +mf[1] >= 2 && +mf[1] <= 17) { floor = +mf[1]; view = 'f'; }
   }
   fromStr((tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) || '');
   fromStr(location.hash);
-  window.addEventListener('hashchange', function () { var s0 = sec, f0 = floor; fromStr(location.hash); var s1 = sec, f1 = floor; sec = s0; floor = f0; go(s1, f1); });
+  window.addEventListener('hashchange', function () { var s0 = sec, f0 = floor, v0 = view; fromStr(location.hash); var s1 = sec, f1 = floor, v1 = view; sec = s0; floor = f0; view = v0; go(s1, f1, v1); });
 
   draw(); showWho(); render(); load();
   setInterval(function () { if (!busy) load(); }, 30000);
