@@ -154,8 +154,8 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
       <span>«2-2/5» = П-2-2, номер 5</span>
     </div>
     <div class="two" id="stg" hidden style="margin-bottom:8px">
-      <button class="btn alt small" data-stage="1" type="button">1-й етап (до +2,900)</button>
-      <button class="btn alt small" data-stage="2" type="button">2-й етап (до +4,200)</button>
+      <button class="btn alt small" data-stage="1" type="button">1-й рівень (до +2,900)</button>
+      <button class="btn alt small" data-stage="2" type="button">2-й рівень (до +4,200)</button>
     </div>
     <svg id="svg" role="img" aria-label="План поверху"></svg>
   </section>
@@ -763,7 +763,7 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     }
     var f = grp(), el = find(sec, f, id), m = markOf(sec, f, id), cur = SEL[sec][f], ev = volOf(sec, f, el);
     active = id;
-    var where = f === 'r' ? sec + ', ' + el.full : sec + ', ' + floor + ' пов., ' + el.name + ', осі ' + el.axs + (f === 1 ? (el.one ? ', в один етап' : ', ' + stgOf(id) + '-й етап') : '');
+    var where = f === 'r' ? sec + ', ' + el.full : sec + ', ' + floor + ' пов., ' + el.name + ', осі ' + el.axs + (f === 1 ? (el.one ? ', на всю висоту' : ', ' + stgOf(id) + '-й рівень') : '');
     if (f === 1) ev = volSel(sec, 1, id);
     $('info').textContent = where + (ev ? ', ' + fmt(ev) + ' м³' : '') +
       (m && m.s === 'done' ? ' · залито' + (m.d ? ' ' + m.d : '') + (m.who ? ' (' + m.who + ')' : '') : '');
@@ -861,9 +861,9 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
         });
         ord1.forEach(function (k) {
           var G = g[k], e = G.e;
-          var rng = e.one ? 'в один етап, до ' + m3(e.top) : st === 1 ? '1-й етап, до ' + m3(e.top1) : '2-й етап, від ' + m3(e.top1) + ' до ' + m3(e.top);
-          lines.push('- ' + (k === 'Пілони' ? k : S1.dn(k)) + (G.n > 1 ? ' ×' + G.n : '') + ' (' + rng + '): ' + fmt(G.v) + ' м³');
-          Object.keys(G.axs).forEach(function (m) { jj.push(S1.dn(m) + ' (' + G.axs[m].join(', ') + ')' + (e.one ? '' : ' ' + st + '-й етап')); });
+          var rng = e.one ? '' : ' (' + st + '-й рівень)';
+          lines.push('- ' + (k === 'Пілони' ? k : S1.dn(k)) + (G.n > 1 ? ' ×' + G.n : '') + rng + ': ' + fmt(G.v) + ' м³');
+          Object.keys(G.axs).forEach(function (m) { jj.push(S1.dn(m) + ' (' + G.axs[m].join(', ') + ')' + (e.one ? '' : ' ' + st + '-й рівень')); });
         });
       });
     } else {
