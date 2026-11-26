@@ -2,192 +2,582 @@
 <html lang="uk">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Бетон Будинок 5</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Бетон Будинок 5 · Поверхи 2-4</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-:root{
-  --bg:var(--tg-theme-secondary-bg-color,#EDEFF0);--card:var(--tg-theme-bg-color,#fff);
-  --ink:var(--tg-theme-text-color,#1C2226);--muted:var(--tg-theme-hint-color,#5C6870);
-  --accent:var(--tg-theme-button-color,#1F5F8B);--on:var(--tg-theme-button-text-color,#fff);
-  --line:#C7CDD1;--wall:#B5BDC3;--ws:#6F7B83;--sel:#F2992E;--done:#3E9A63;--fail:#D64541;
+:root {
+  --bg: var(--tg-theme-secondary-bg-color, #EDEFF0); --surface: var(--tg-theme-bg-color, #FFFFFF);
+  --ink: var(--tg-theme-text-color, #1C2226); --muted: var(--tg-theme-hint-color, #5C6870);
+  --accent: var(--tg-theme-button-color, #1F5F8B); --on-accent: var(--tg-theme-button-text-color, #FFFFFF);
+  --line: #C7CDD1; --grid: #AEB6BC; --wall: #B5BDC3; --wall-stroke: #6F7B83;
+  --sel: #F2992E; --done: #3E9A63; --fail: #D64541;
+  --font-num: ui-monospace, Menlo, Consolas, monospace;
 }
-*{box-sizing:border-box}
-body{margin:0;padding:12px;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,system-ui,sans-serif}
-.card{background:var(--card);border-radius:10px;padding:12px;margin-bottom:10px}
-.row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.muted{color:var(--muted);font-size:13px}
-.tot{font-size:24px;font-weight:600}
-.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted);margin-top:8px}
-.legend i{display:inline-block;width:11px;height:11px;margin-right:4px;vertical-align:-1px}
-svg{width:100%;height:auto;display:block}
-.gl{stroke:#AEB6BC;stroke-width:1.5;stroke-dasharray:8 6}
-.ax{fill:var(--muted);font-size:16px;text-anchor:middle;dominant-baseline:central}
-.el{cursor:pointer}.el .sh{fill:var(--wall);stroke:var(--ws);stroke-width:1.5}
-.el.sel .sh{fill:var(--sel)}.el.done .sh{fill:var(--done)}.el.fail .sh{fill:var(--fail)}
-.lb{fill:var(--ink);font-size:15px;font-weight:600;text-anchor:middle;pointer-events:none}
-.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
-button,select,input{font:inherit;color:var(--ink)}
-.b{border:1px solid var(--line);background:transparent;border-radius:8px;padding:9px 4px;min-height:42px}
-.b.on{background:var(--accent);color:var(--on);border-color:var(--accent)}
-select,input{width:100%;border:1px solid var(--line);border-radius:8px;padding:9px;min-height:42px;background:var(--card);font-size:16px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
-label{display:block;font-size:13px;color:var(--muted);margin-top:10px}
-pre{white-space:pre-wrap;font:13px/1.5 ui-monospace,Menlo,monospace;margin:0}
-.msg{color:var(--done);font-size:13px;min-height:1.2em;margin-top:6px}
-.ask{position:fixed;left:12px;right:12px;bottom:12px;background:var(--card);border:2px solid var(--fail);border-radius:10px;padding:12px;box-shadow:0 6px 24px rgba(0,0,0,.25)}
-.ask .two{margin-top:10px}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 12px 12px 24px; background: var(--bg); color: var(--ink); font: 15px/1.45 -apple-system, system-ui, "Segoe UI", sans-serif; }
+.wrap { display: grid; gap: 10px; max-width: 700px; margin: 0 auto; }
+h1 { font-size: 1.25rem; margin: 0; font-weight: 600; }
+.sub { color: var(--muted); margin: 2px 0 0; font-size: 0.8125rem; }
+h2 { font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; font-weight: 600; }
+.card { background: var(--surface); border-radius: 10px; padding: 12px; min-width: 0; }
+.top { position: sticky; top: 0; z-index: 9; display: grid; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.row { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; justify-content: space-between; }
+.tot { font-family: var(--font-num); font-size: 1.5rem; font-weight: 500; line-height: 1.1; }
+.tot small { font-size: 0.875rem; color: var(--muted); }
+.tot .lbl { font-size: 0.75rem; color: var(--muted); display: block; font-family: inherit; }
+.three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.basket { display: flex; flex-wrap: wrap; gap: 6px; }
+.basket:empty { display: none; }
+.chip { border: 1px solid var(--sel); background: transparent; color: var(--ink); border-radius: 14px; padding: 3px 10px; font-size: 0.8125rem; cursor: pointer; }
+.chip.cur { background: var(--sel); color: #1C2226; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 0.75rem; color: var(--muted); margin-bottom: 8px; }
+.legend i { display: inline-block; width: 11px; height: 11px; border: 1px solid var(--wall-stroke); margin-right: 4px; vertical-align: -1px; }
+svg { display: block; width: 100%; height: auto; touch-action: manipulation; }
+.gl { stroke: var(--grid); stroke-width: 1.5; stroke-dasharray: 14 9; }
+.ax { fill: var(--muted); font-family: var(--font-num); text-anchor: middle; dominant-baseline: central; }
+.el { cursor: pointer; }
+.el .hit { fill: transparent; }
+.el .sh { fill: var(--wall); stroke: var(--wall-stroke); stroke-width: 1.5; }
+.el.done .sh { fill: var(--done); }
+.el.fail .sh { fill: var(--fail); }
+.el.sel .sh { fill: var(--sel); }
+.el.act .sh { stroke: var(--accent); stroke-width: 5; }
+.lbs { fill: var(--ink); font-weight: 600; text-anchor: middle; dominant-baseline: central; paint-order: stroke; stroke: var(--surface); stroke-width: 6px; pointer-events: none; }
+button, input, select, textarea { font: inherit; color: var(--ink); }
+.btn { background: var(--accent); color: var(--on-accent); border: 0; border-radius: 8px; padding: 10px 12px; font-weight: 500; min-height: 44px; cursor: pointer; }
+.btn.alt { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.btn.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.btn.small { min-height: 40px; padding: 6px 10px; }
+.btn .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--sel); margin-left: 5px; vertical-align: 1px; }
+.form { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.form label { display: grid; gap: 4px; font-size: 0.8125rem; color: var(--muted); min-width: 0; }
+.form .wide { grid-column: 1 / -1; }
+input, textarea, select { font-size: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; min-height: 44px; width: 100%; min-width: 0; }
+textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); font-size: 13px; line-height: 1.5; }
+.actions { display: grid; gap: 8px; margin-top: 10px; }
+.note { font-size: 0.8125rem; color: var(--muted); margin: 6px 0 0; }
+.ok { color: var(--done); font-size: 0.8125rem; min-height: 1.2em; margin: 6px 0 0; }
+.ask { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 20; background: var(--surface); border: 2px solid var(--fail); border-radius: 10px; padding: 12px; box-shadow: 0 6px 24px rgba(0,0,0,.25); display: grid; gap: 10px; }
+.ask .row2 { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="row"><b>С-6 · 2-й поверх</b><span class="muted">ПРОБНА ВЕРСІЯ</span></div>
-  <div class="row" style="margin-top:6px"><span class="muted">Вибрано в заявку</span><span class="tot"><span id="sum">0,00</span> м³</span></div>
-</div>
+<div class="wrap">
+  <header>
+    <h1 id="h1">С-6 · Поверх 2</h1>
+    <p class="sub" id="sub"></p>
+  </header>
 
-<div class="card">
-  <svg viewBox="0 0 360 200" id="svg">
-    <line class="gl" x1="90" y1="20" x2="90" y2="175"/><line class="gl" x1="270" y1="20" x2="270" y2="175"/>
-    <line class="gl" x1="40" y1="100" x2="330" y2="100"/>
-    <text class="ax" x="90" y="190">1</text><text class="ax" x="270" y="190">2</text><text class="ax" x="22" y="100">А</text>
-  </svg>
-  <div class="legend">
-    <span><i style="background:var(--wall)"></i>не бетонували</span><span><i style="background:var(--sel)"></i>вибрано</span>
-    <span><i style="background:var(--done)"></i>залито</span><span><i style="background:var(--fail)"></i>не залили</span>
+  <div class="card top" aria-live="polite">
+    <div class="three" id="secs">
+      <button class="btn alt small" data-sec="С-4" type="button">С-4</button>
+      <button class="btn alt small" data-sec="С-5" type="button">С-5</button>
+      <button class="btn alt small" data-sec="С-6" type="button">С-6</button>
+    </div>
+    <div class="three" id="fls">
+      <button class="btn alt small" data-fl="2" type="button">2 поверх</button>
+      <button class="btn alt small" data-fl="3" type="button">3 поверх</button>
+      <button class="btn alt small" data-fl="4" type="button">4 поверх</button>
+    </div>
+    <div class="row">
+      <div class="tot"><span class="lbl">Вибрано в заявку</span><span id="selVol">0,00</span> <small>м³</small></div>
+      <button class="btn alt small" id="clear" type="button">Зняти вибір</button>
+    </div>
+    <div class="basket" id="basket"></div>
+    <span class="note" id="info" style="margin:0">Торкніться елемента на схемі</span>
   </div>
-  <div class="muted" id="info" style="margin-top:6px">Торкніться пілона</div>
-</div>
 
-<div class="card">
-  <label style="margin-top:0">Дата подачі</label>
-  <div class="seg"><button class="b" data-d="0">Сьогодні</button><button class="b" data-d="1">Завтра</button><button class="b" data-d="2">Післязавтра</button></div>
-  <label>Час подачі</label>
-  <div class="two"><select id="hh"></select><select id="mm"></select></div>
-  <label>Додатковий бетон, м³ (можна з мінусом)</label>
-  <input id="xv" inputmode="text" placeholder="напр. 1,5 або -0,8">
-  <div class="muted" style="margin-top:10px" id="who"></div>
-</div>
+  <section class="card" aria-label="План поверху">
+    <div class="legend">
+      <span><i style="background:var(--wall)"></i>не бетонували</span>
+      <span><i style="background:var(--sel)"></i>вибрано</span>
+      <span><i style="background:var(--done)"></i>залито</span>
+      <span><i style="background:var(--fail)"></i>не залили</span>
+      <span>«2-2/5» = П-2-2, номер 5</span>
+    </div>
+    <svg id="svg" role="img" aria-label="План поверху"></svg>
+  </section>
 
-<div class="card"><pre id="order"></pre><div class="msg" id="msg"></div>
-  <button class="b" id="fact" style="width:100%;margin-top:8px">Позначити залитим (без заявки)</button>
+  <section class="card">
+    <h2>Заявка на завод</h2>
+    <div class="form">
+      <label>Додатковий бетон, м³
+        <input id="xv" type="text" inputmode="text" placeholder="напр. 1,5 або -0,8">
+      </label>
+      <label>Що саме
+        <input id="xt" type="text" placeholder="напр. долив сусідам">
+      </label>
+      <label class="wide">Дата подачі
+        <div class="three"><button type="button" class="btn alt small" data-plus="0">Сьогодні</button><button type="button" class="btn alt small" data-plus="1">Завтра</button><button type="button" class="btn alt small" data-plus="2">Післязавтра</button></div>
+        <input id="date" type="date">
+      </label>
+      <label class="wide">Час подачі (обов’язково)
+        <span style="display:flex;gap:6px"><select id="hh" aria-label="Година"></select><select id="mm" aria-label="Хвилини"></select></span>
+      </label>
+      <label class="wide">Текст заявки
+        <textarea id="order" readonly></textarea>
+      </label>
+    </div>
+    <div class="actions">
+      <button class="btn" id="send" type="button" hidden>Відправити заявку</button>
+      <button class="btn alt" id="fact" type="button">Позначити залитим (без заявки)</button>
+      <button class="btn alt" id="copy" type="button">Копіювати текст</button>
+    </div>
+    <p class="ok" id="msg" role="status"></p>
+    <p class="note" id="whoLine"></p>
+    <p class="note">Щоб додати в заявку іншу секцію, перемкніть секцію вгорі й виберіть елементи. Вибране з усіх секцій піде однією заявкою. Позначки «залито» спільні для всіх бригадирів.</p>
+  </section>
 </div>
 
 <script>
-var EXEC = 'https://script.google.com/macros/s/AKfycbzH8gF3gSr9xOH1TUk-IAcwo5jvA4V95D4t1dphKojBcbrZYmSM7UgNpKn-ayeQwjCApQ/exec';
-var PFX = 'test:С-6:2:';
-var E = [
-  { id: 'П-1', name: 'П-1', axs: '1/А', v: 0.92, r: [80, 70, 20, 60] },
-  { id: 'П-2', name: 'П-2', axs: '2/А', v: 1.09, r: [255, 90, 30, 20] }
-];
-var tg = window.Telegram && Telegram.WebApp;
-if (tg) { tg.ready(); tg.expand(); }
-var u = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
-var WHO = u ? [u.first_name, u.last_name].filter(Boolean).join(' ') : '';
-document.getElementById('who').textContent = WHO ? 'Бригадир: ' + WHO + ' (з Telegram)' : 'Відкрийте через Telegram, щоб підставилось ім\'я';
+(function () {
+  // ===== Налаштування =====
+  var TEST = true; // true: заявка з поміткою «ТЕСТ», позначки з префіксом test:. Для роботи поставити false.
+  var EXEC = 'https://script.google.com/macros/s/AKfycbzH8gF3gSr9xOH1TUk-IAcwo5jvA4V95D4t1dphKojBcbrZYmSM7UgNpKn-ayeQwjCApQ/exec';
+  var KEYQ = '?key=beton5';
+  var SEC_LIST = ['С-4', 'С-5', 'С-6'], FLOORS = [2, 3, 4];
 
-var ST = {}, SEL = {}, day = null, nodes = {};
-function fmt(n) { return n.toFixed(2).replace('.', ','); }
-function p2(n) { return (n < 10 ? '0' : '') + n; }
-var NS = 'http://www.w3.org/2000/svg', svg = document.getElementById('svg');
-E.forEach(function (e) {
-  var g = document.createElementNS(NS, 'g'); g.setAttribute('class', 'el');
-  var r = document.createElementNS(NS, 'rect'); r.setAttribute('class', 'sh');
-  r.setAttribute('x', e.r[0]); r.setAttribute('y', e.r[1]); r.setAttribute('width', e.r[2]); r.setAttribute('height', e.r[3]);
-  var h = document.createElementNS(NS, 'rect'); h.setAttribute('fill', 'transparent');
-  h.setAttribute('x', e.r[0] - 20); h.setAttribute('y', e.r[1] - 20); h.setAttribute('width', e.r[2] + 40); h.setAttribute('height', e.r[3] + 40);
-  var t = document.createElementNS(NS, 'text'); t.setAttribute('class', 'lb'); t.setAttribute('x', e.r[0] + e.r[2] / 2); t.setAttribute('y', e.r[1] - 8); t.textContent = e.name;
-  g.appendChild(r); g.appendChild(h); g.appendChild(t); svg.appendChild(g);
-  g.addEventListener('click', function () { tap(e); });
-  nodes[e.id] = g;
-});
+  var tg = window.Telegram && Telegram.WebApp;
+  if (tg && !tg.initData) tg = null;
+  if (tg) { tg.ready(); tg.expand(); }
 
-function st(e) { return SEL[e.id] ? 'sel' : (ST[PFX + e.id] && ST[PFX + e.id].s) || ''; }
-function tap(e) {
-  var s = ST[PFX + e.id];
-  document.getElementById('info').textContent = e.name + ', осі ' + e.axs + ', ' + fmt(e.v) + ' м³' + (s && s.s === 'done' ? ' · залито ' + s.d + (s.who ? ' (' + s.who + ')' : '') : '');
-  if (s && s.s === 'done' && !SEL[e.id]) { askFail(e); return; }
-  if (SEL[e.id]) delete SEL[e.id]; else SEL[e.id] = 1;
-  if (tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
-  render();
-}
-function askFail(e) {
-  var d = document.createElement('div'); d.className = 'ask';
-  d.innerHTML = '<div>' + e.name + ' залито. Не забетонували?</div><div class="two"><button class="b" id="n">Ні, залито</button><button class="b" id="y" style="background:var(--fail);color:#fff;border-color:var(--fail)">Так, не залили</button></div>';
-  document.body.appendChild(d);
-  d.querySelector('#n').onclick = function () { d.remove(); };
-  d.querySelector('#y').onclick = function () { d.remove(); mark([e.id], 'fail', ''); };
-}
-function xv() { var v = parseFloat(String(document.getElementById('xv').value).replace(',', '.')); return isFinite(v) ? v : 0; }
-function dateStr() { if (day === null) return ''; var d = new Date(); d.setDate(d.getDate() + day); return p2(d.getDate()) + '.' + p2(d.getMonth() + 1) + '.' + d.getFullYear(); }
-function timeStr() { var h = hh.value, m = mm.value; return h && m ? h + ':' + m : ''; }
-function selList() { return E.filter(function (e) { return SEL[e.id]; }); }
-function orderText() {
-  var L = selList(), sum = 0; L.forEach(function (e) { sum += e.v; }); sum += xv();
-  if (!L.length && !xv()) return '';
-  var lines = ['ТЕСТ, не виконувати', 'Заявка на бетон: ' + fmt(sum) + ' м³', 'Об\'єкт: Будинок №5, секція С-6, 2-й поверх',
-    'Подача: ' + (dateStr() || '___') + ', ' + (timeStr() || '__:__')];
-  if (WHO) lines.push('Бригадир: ' + WHO);
-  lines.push('Конструкції:');
-  if (L.length) lines.push('- Пілони ×' + L.length + ': ' + fmt(sum - xv()) + ' м³');
-  if (xv()) lines.push('- Додатковий бетон: ' + fmt(xv()) + ' м³');
-  return lines.join('\n');
-}
-function render() {
-  var sum = 0;
-  E.forEach(function (e) { var s = st(e); nodes[e.id].setAttribute('class', 'el' + (s ? ' ' + s : '')); if (SEL[e.id]) sum += e.v; });
-  document.getElementById('sum').textContent = fmt(sum + xv());
-  var t = orderText();
-  document.getElementById('order').textContent = t || 'Виберіть пілони, і тут з\'явиться заявка.';
-  if (tg) {
-    var ok = t && dateStr() && timeStr();
-    tg.MainButton.setText(ok ? 'Відправити заявку · ' + fmt(sum + xv()) + ' м³' : 'Виберіть пілони, дату і час');
-    tg.MainButton.color = ok ? tg.themeParams.button_color || '#1F5F8B' : '#9AA6AD';
-    tg.MainButton.show();
+  // ===== Загальне для схем =====
+  function list(fill) {
+    var E = [];
+    function add(m, n, v, rects, extra) {
+      var e = { id: m + '_' + n, m: m, n: n, v: v, rects: rects };
+      if (extra) for (var k in extra) e[k] = extra[k];
+      E.push(e);
+    }
+    function series(m, v, l) { l.forEach(function (r, i) { add(m, i + 1, v, [r]); }); }
+    fill(add, series);
+    return E;
   }
-}
+  function near(arr, v) {
+    var best = arr[0];
+    arr.forEach(function (a) { if (Math.abs(a[1] - v) < Math.abs(best[1] - v)) best = a; });
+    return best[0];
+  }
+  function names(E, COLS, ROWS, dn) {
+    E.forEach(function (e) {
+      if (!e.axs) { var q = e.rects[0]; e.axs = near(COLS, q[0] + q[2] / 2) + '/' + near(ROWS, q[1] + q[3] / 2); }
+      var same = E.filter(function (x) { return x.m === e.m; }).length;
+      e.name = dn(e.m) + (same > 1 ? ' №' + e.n : '');
+    });
+  }
+  function plain(m) { return m; }
 
-var hh = document.getElementById('hh'), mm = document.getElementById('mm');
-hh.innerHTML = '<option value="">ГГ</option>'; mm.innerHTML = '<option value="">ХХ</option>';
-for (var h = 8; h <= 18; h++) hh.innerHTML += '<option>' + p2(h) + '</option>';
-['00', '15', '30', '45'].forEach(function (m) { mm.innerHTML += '<option>' + m + '</option>'; });
-hh.onchange = function () { if (hh.value && !mm.value) mm.value = '00'; render(); }; mm.onchange = render;
-document.getElementById('xv').oninput = render;
-Array.prototype.forEach.call(document.querySelectorAll('[data-d]'), function (b) {
-  b.onclick = function () {
-    day = +b.getAttribute('data-d');
-    Array.prototype.forEach.call(document.querySelectorAll('[data-d]'), function (x) { x.classList.toggle('on', x === b); });
+  // С-4 і С-6: однаковий набір елементів (С-4 дзеркальна)
+  function fill46(wallAxs, peAxs) {
+    return function (add, series) {
+      series('П-2-1', 1.17, [[401, 946, 62, 10], [401, 1437, 63, 9], [942, 1437, 63, 9]]);
+      series('П-2-2', 1.09, [
+        [123, 530, 9, 58], [395, 677, 58, 9], [611, 677, 57, 9], [658, 823, 10, 59], [738, 799, 9, 58],
+        [738, 946, 58, 10], [947, 701, 58, 9], [947, 824, 58, 9], [947, 946, 58, 10], [401, 1191, 58, 9],
+        [401, 1314, 58, 9], [610, 1069, 58, 9], [610, 1314, 58, 9], [738, 1069, 58, 9], [738, 1314, 58, 9],
+        [947, 1069, 58, 9], [947, 1191, 58, 9], [947, 1314, 58, 9], [995, 419, 10, 58], [738, 579, 58, 9]
+      ]);
+      series('П-2-3', 0.63, [
+        [249, 334, 8, 33], [249, 555, 8, 33], [316, 676, 8, 35], [316, 799, 8, 34], [401, 823, 9, 34],
+        [658, 946, 10, 34], [738, 676, 9, 35], [401, 1069, 34, 9], [659, 1167, 9, 34], [738, 1191, 9, 35],
+        [610, 1437, 34, 9], [762, 1437, 34, 9], [971, 579, 34, 9]
+      ]);
+      series('П-2-4', 0.63, [[123, 334, 8, 33], [123, 676, 9, 35], [123, 799, 9, 34], [917, 280, 35, 9], [610, 1585, 34, 8], [762, 1585, 34, 8]]);
+      series('П-2-5', 0.91, [[807, 280, 50, 9]]);
+      series('П-2-6', 0.91, [[455, 1585, 47, 8], [905, 1585, 47, 8]]);
+      add('Стм-2-1', 1, 26.90, [
+        [395, 334, 130, 10], [395, 334, 10, 254], [515, 334, 10, 254], [395, 549, 130, 9], [525, 334, 69, 10],
+        [594, 334, 10, 194], [737, 334, 10, 194], [594, 334, 153, 10], [603, 518, 42, 10], [696, 518, 51, 10],
+        [663, 344, 9, 92], [604, 436, 18, 9], [720, 436, 17, 9]
+      ], { lab: [460, 450], wall: true, axs: wallAxs });
+      add('Перестінок', 1, 0.90, [[604, 364, 58, 5]], { lab: [633, 395], wall: true, fs: 22, axs: peAxs });
+    };
+  }
+  var ROWS46 = [['Мс', 284], ['Лс', 338], ['Кс', 461], ['Ис', 583], ['Жс', 706], ['Єс', 828], ['Ес', 951], ['Дс', 1074], ['Гс', 1196], ['Вс', 1318], ['Бс', 1441], ['Ас', 1589]];
+  var VIEW46 = { vb: '100 255 960 1360', colY: [270, 1625], colLab: 264, rowX: [110, 1040], rowLab: 1050, ax: 28, lbs: 30, pl: 20, pad: [8, 14] };
+  var SUB46 = 'вертикальні елементи, висота поверху 2,8 м, заливка в один етап. Схема умовна, положення знято з креслення на око.';
+
+  var SECS = {};
+
+  SECS['С-6'] = (function () {
+    var COLS = [['1с', 127], ['2с', 253], ['3с', 320], ['4с', 406], ['5с', 664], ['6с', 743], ['7с', 1001]];
+    var E = list(fill46('4с-6с/Лс-Ис', '5с-6с/Лс-Кс'));
+    names(E, COLS, ROWS46, plain);
+    return { E: E, COLS: COLS, ROWS: ROWS46, dn: plain, view: VIEW46, sub: SUB46 };
+  })();
+
+  SECS['С-4'] = (function () {
+    var COLS = [['1с', 127], ['2с', 385], ['3с', 464], ['4с', 722], ['5с', 808], ['6с', 875], ['7с', 1001]];
+    var E = list(fill46('2с-4с/Лс-Ис', '2с-3с/Лс-Кс'));
+    var XM = 1128;
+    E.forEach(function (e) {
+      e.rects = e.rects.map(function (r) { return [XM - r[0] - r[2], r[1], r[2], r[3]]; });
+      if (e.lab) e.lab = [XM - e.lab[0], e.lab[1]];
+    });
+    names(E, COLS, ROWS46, plain);
+    return { E: E, COLS: COLS, ROWS: ROWS46, dn: plain, view: VIEW46, sub: SUB46 };
+  })();
+
+  SECS['С-5'] = (function () {
+    var COLS = [['1с', 294], ['2с', 458], ['3с', 610], ['4с', 666], ['5с', 785], ['6с', 949], ['7с', 1115], ['8с', 1280], ['9с', 1442], ['10с', 1605], ['11с', 1767]];
+    var ROWS = [['Дс', 100], ['Гс', 178], ['Вс', 395], ['Бс', 500], ['Ас', 842]];
+    var DISP = { 'Стм-2-1': 'Ліфтова', 'Стм-2-2': 'Сходова' };
+    function dn(m) { return DISP[m] ? DISP[m] + ' (' + m + ')' : m; }
+    var E = list(function (add, series) {
+      series('П-2-1', 1.17, [[1438, 98, 14, 88]]);
+      series('П-2-2', 1.09, [[453, 493, 14, 82], [779, 493, 14, 82], [1113, 493, 14, 82], [1602, 493, 14, 82],
+        [453, 767, 14, 80], [616, 767, 14, 80], [1275, 767, 14, 80], [1602, 767, 14, 80]]);
+      series('П-2-3', 0.63, [[453, 172, 15, 46], [1602, 172, 14, 46], [453, 352, 15, 48], [1438, 353, 14, 48], [1602, 353, 14, 48],
+        [650, 493, 52, 14], [913, 493, 47, 14], [1254, 493, 46, 14], [1405, 493, 48, 14],
+        [779, 800, 14, 47], [946, 800, 14, 47], [1113, 800, 14, 47], [1438, 800, 14, 47]]);
+      series('П-2-4', 0.63, [[289, 172, 15, 46], [1765, 172, 14, 46], [289, 352, 15, 48], [1765, 353, 14, 48],
+        [289, 493, 15, 46], [1765, 493, 14, 47], [289, 800, 15, 47], [1765, 800, 14, 47]]);
+      add('Стм-2-1', 1, 14.32, [[652, 100, 208, 13], [652, 100, 15, 278], [845, 100, 15, 278], [748, 113, 12, 127],
+        [667, 240, 21, 10], [738, 240, 27, 10], [820, 240, 25, 10], [655, 367, 67, 11], [788, 367, 70, 11]],
+        { lab: [756, 310], wall: true, axs: '4с-5с/Дс-Вс' });
+      add('Перестінок', 1, 0.90, [[667, 143, 81, 10]], { lab: [708, 172], wall: true, axs: '4с-5с/Дс-Гс' });
+      add('Стм-2-2', 1, 13.8, [[950, 160, 15, 178], [950, 325, 305, 15], [1242, 98, 13, 282], [950, 160, 182, 12], [1228, 160, 17, 12]],
+        { lab: [1100, 250], wall: true, axs: '6с-8с/Дс-Вс' });
+    });
+    names(E, COLS, ROWS, dn);
+    // стиснення порожніх прольотів між осями (як в артефакті)
+    var GAPS = [[304, 453, 80], [468, 616, 80], [860, 913, 40], [1300, 1405, 80], [1453, 1602, 80], [1616, 1765, 80], [975, 1235, 110]];
+    function F(x) {
+      var o = 0;
+      GAPS.forEach(function (g) {
+        if (x >= g[1]) o += (g[1] - g[0]) - g[2];
+        else if (x > g[0]) o += (x - g[0]) * (1 - g[2] / (g[1] - g[0]));
+      });
+      return x - o;
+    }
+    function TR(r) { if (r[2] <= 60) return [F(r[0] + r[2] / 2) - r[2] / 2, r[1], r[2], r[3]]; var a = F(r[0]), b = F(r[0] + r[2]); return [a, r[1], b - a, r[3]]; }
+    E.forEach(function (e) { e.rects = e.rects.map(TR); if (e.lab) e.lab = [F(e.lab[0]), e.lab[1]]; });
+    COLS = COLS.map(function (c) { return [c[0], F(c[1])]; });
+    var XS = 215, VY = 62, VH = 868, VBW = Math.round(F(1830) - XS);
+    return {
+      E: E, COLS: COLS, ROWS: ROWS, dn: dn,
+      view: { vb: XS + ' ' + VY + ' ' + VBW + ' ' + VH, par: 'none', aspect: VBW + ' / ' + Math.round(VH * 1.3),
+        colY: [90, 885], colLab: 905, rowX: [F(250), F(1790)], rowLab: 236, ax: 26, lbs: 26, pl: 22, pad: [10, 20] },
+      sub: 'вертикальні елементи на відм. +4,400, +7,400, +10,400, висота поверху 2,8 м, заливка в один етап. Положення знято з креслення на око.'
+    };
+  })();
+
+  // ===== Допоміжне =====
+  var NS = 'http://www.w3.org/2000/svg';
+  function fmt(n) { return n.toFixed(2).replace('.', ','); }
+  function pad2(q) { return (q < 10 ? '0' : '') + q; }
+  function $(id) { return document.getElementById(id); }
+  function mk(tag, attrs, parent) {
+    var n = document.createElementNS(NS, tag);
+    for (var a in attrs) n.setAttribute(a, attrs[a]);
+    if (parent) parent.appendChild(n);
+    return n;
+  }
+  function each(sel, fn) { Array.prototype.forEach.call(document.querySelectorAll(sel), fn); }
+  function find(sec, id) { return SECS[sec].E.filter(function (x) { return x.id === id; })[0]; }
+
+  // ===== Стан =====
+  var ST = {};  // позначки з таблиці: { '<секція>:<поверх>:<id>': {s, d, who} }
+  var SEL = {}; // вибір у заявку (тільки на цьому телефоні): SEL['С-6'][2]['П-2-2_5'] = 1
+  SEC_LIST.forEach(function (s) { SEL[s] = {}; FLOORS.forEach(function (f) { SEL[s][f] = {}; }); });
+  var sec = 'С-6', floor = 2, active = null, dateOk = false, busy = false, nodes = {};
+  function key(s, f, id) { return (TEST ? 'test:' : '') + s + ':' + f + ':' + id; }
+  function mark(id) { return ST[key(sec, floor, id)] || null; }
+  function stateOf(id) { if (SEL[sec][floor][id]) return 'sel'; var s = mark(id); return s ? s.s : ''; }
+  function count(s, f) { return Object.keys(SEL[s][f]).length; }
+
+  function load() {
+    return fetch(EXEC + KEYQ + '&mode=state').then(function (r) { return r.json(); })
+      .then(function (j) { ST = j || {}; render(); })
+      .catch(function () { $('msg').textContent = 'Не вдалося завантажити позначки. Перевірте інтернет.'; });
+  }
+  function saveMarks(keys, s, d) {
+    var q = KEYQ + '&mode=mark&s=' + s + '&d=' + encodeURIComponent(d || '') + '&who=' + encodeURIComponent(WHO) +
+      '&ids=' + encodeURIComponent(keys.join(','));
+    return fetch(EXEC + q).then(function (r) { return r.json(); }).then(function (j) { ST = j || {}; render(); });
+  }
+
+  // ===== Малювання схеми поточної секції =====
+  var svg = $('svg');
+  function draw() {
+    var S = SECS[sec], V = S.view;
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    svg.setAttribute('viewBox', V.vb);
+    if (V.par) svg.setAttribute('preserveAspectRatio', V.par); else svg.removeAttribute('preserveAspectRatio');
+    svg.style.aspectRatio = V.aspect || '';
+    S.COLS.forEach(function (c) {
+      mk('line', { x1: c[1], y1: V.colY[0], x2: c[1], y2: V.colY[1], 'class': 'gl' }, svg);
+      mk('text', { x: c[1], y: V.colLab, 'class': 'ax', style: 'font-size:' + V.ax + 'px' }, svg).textContent = c[0];
+    });
+    S.ROWS.forEach(function (r) {
+      mk('line', { x1: V.rowX[0], y1: r[1], x2: V.rowX[1], y2: r[1], 'class': 'gl' }, svg);
+      mk('text', { x: V.rowLab, y: r[1], 'class': 'ax', style: 'font-size:' + V.ax + 'px' }, svg).textContent = r[0];
+    });
+    nodes = {};
+    S.E.forEach(function (e) {
+      var g = mk('g', { 'class': 'el', role: 'button' }, svg);
+      var pad = e.wall ? V.pad[0] : V.pad[1];
+      e.rects.forEach(function (r) { mk('rect', { x: r[0], y: r[1], width: r[2], height: r[3], 'class': 'sh' }, g); });
+      e.rects.forEach(function (r) { mk('rect', { x: r[0] - pad, y: r[1] - pad, width: r[2] + 2 * pad, height: r[3] + 2 * pad, 'class': 'hit' }, g); });
+      if (e.lab) {
+        var t = mk('text', { x: e.lab[0], y: e.lab[1], 'class': 'lbs', style: 'font-size:' + (e.fs || V.lbs) + 'px' + (e.fs ? ';stroke-width:5px' : '') }, g);
+        t.textContent = S.dn === plain ? e.m : (S.dn(e.m).split(' (')[0]);
+      } else {
+        var r0 = e.rects[0];
+        var tn = mk('text', { x: r0[0] + r0[2] / 2, y: r0[1] - 16, 'class': 'lbs', style: 'font-size:' + V.pl + 'px;stroke-width:5px' }, g);
+        tn.textContent = e.m.replace('П-', '') + '/' + e.n;
+      }
+      g.addEventListener('click', function () { act(e.id); });
+      nodes[e.id] = g;
+    });
+    $('sub').textContent = 'Будинок №5, секція ' + sec + ', ' + S.sub;
+  }
+
+  // ===== Бригадир =====
+  var u = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+  var WHO = u ? [u.first_name, u.last_name].filter(Boolean).join(' ') : '';
+  function showWho() {
+    var l = $('whoLine'); l.textContent = '';
+    if (WHO) { l.textContent = 'Бригадир: ' + WHO + (u ? ' (з Telegram)' : ''); return; }
+    var a = document.createElement('a'); a.href = '#'; a.textContent = 'Вкажіть своє ім\'я';
+    a.addEventListener('click', function (ev) { ev.preventDefault(); askWho(); });
+    l.appendChild(a);
+  }
+  function askWho() {
+    if ($('whoBox')) return;
+    var d = document.createElement('div'); d.id = 'whoBox'; d.className = 'ask'; d.style.borderColor = 'var(--accent)';
+    var p = document.createElement('div'); p.textContent = 'Як вас звати? Ім\'я буде в заявці, щоб прораб знав, хто замовив.'; d.appendChild(p);
+    var inp = document.createElement('input'); inp.type = 'text'; inp.placeholder = 'напр. Петренко'; d.appendChild(inp);
+    var r = document.createElement('div'); r.className = 'row2';
+    var ok = document.createElement('button'); ok.type = 'button'; ok.className = 'btn small'; ok.textContent = 'Зберегти';
+    ok.addEventListener('click', function () { var v = inp.value.trim(); if (!v) { inp.focus(); return; } WHO = v; d.parentNode.removeChild(d); showWho(); render(); });
+    r.appendChild(ok); d.appendChild(r); document.body.appendChild(d);
+  }
+
+  // ===== «Не забетонували?» =====
+  function askFail(name, yes, date) {
+    var old = $('ask'); if (old) old.parentNode.removeChild(old);
+    var d = document.createElement('div'); d.id = 'ask'; d.className = 'ask';
+    var p = document.createElement('div'); p.textContent = name + (date ? ' залито ' + date : ' позначено залитим') + '. Не забетонували?'; d.appendChild(p);
+    var r = document.createElement('div'); r.className = 'row2';
+    var no = document.createElement('button'); no.type = 'button'; no.className = 'btn alt small'; no.textContent = 'Ні, залито';
+    var ok = document.createElement('button'); ok.type = 'button'; ok.className = 'btn small'; ok.style.background = 'var(--fail)'; ok.style.color = '#FFFFFF'; ok.textContent = 'Так, не залили';
+    no.addEventListener('click', function () { d.parentNode.removeChild(d); });
+    ok.addEventListener('click', function () { d.parentNode.removeChild(d); yes(); });
+    r.appendChild(no); r.appendChild(ok); d.appendChild(r); document.body.appendChild(d);
+  }
+
+  function act(id) {
+    active = id;
+    var el = find(sec, id), s = mark(id), cur = SEL[sec][floor];
+    $('info').textContent = sec + ', ' + el.name + ', осі ' + el.axs + ', ' + fmt(el.v) + ' м³' +
+      (s && s.s === 'done' ? ' · залито ' + (s.d || '') + (s.who ? ' (' + s.who + ')' : '') : '');
+    if (s && s.s === 'done' && !cur[id]) {
+      var k = key(sec, floor, id);
+      askFail(sec + ', ' + el.name + ', ' + floor + '-й поверх,', function () {
+        $('msg').textContent = 'Записую...';
+        saveMarks([k], 'fail', '').then(function () { $('msg').textContent = el.name + ' позначено «не залили».'; })
+          .catch(function () { $('msg').textContent = 'Помилка зв\'язку, спробуйте ще раз.'; });
+      }, s.d);
+      render();
+      return;
+    }
+    if (cur[id]) delete cur[id]; else cur[id] = 1;
+    if (tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
     render();
-  };
-});
+  }
 
-function load() {
-  fetch(EXEC + '?key=beton5&mode=state').then(function (r) { return r.json(); })
-    .then(function (j) { ST = j || {}; render(); })
-    .catch(function () { document.getElementById('msg').textContent = 'Не вдалося завантажити позначки.'; });
-}
-function mark(ids, s, d) {
-  var q = '?key=beton5&mode=mark&s=' + s + '&d=' + encodeURIComponent(d) + '&who=' + encodeURIComponent(WHO) +
-    '&ids=' + encodeURIComponent(ids.map(function (i) { return PFX + i; }).join(','));
-  return fetch(EXEC + q).then(function (r) { return r.json(); }).then(function (j) { ST = j || {}; render(); });
-}
-function send(fact) {
-  var t = orderText(), msg = document.getElementById('msg');
-  if (!t) { msg.textContent = 'Спочатку виберіть пілони.'; return; }
-  if (!dateStr() || (!fact && !timeStr())) { msg.textContent = fact ? 'Виберіть дату.' : 'Виберіть дату і час.'; return; }
-  var ids = selList().map(function (e) { return e.id; }), d = dateStr();
-  msg.textContent = 'Надсилаю...';
-  fetch(EXEC + '?key=beton5' + (fact ? '&mode=fact' : '') + '&text=' + encodeURIComponent(t), { mode: 'no-cors' })
-    .then(function () { SEL = {}; document.getElementById('xv').value = ''; return mark(ids, 'done', d); })
-    .then(function () {
-      msg.textContent = fact ? 'Позначено залитим ' + d + '.' : 'Заявку відправлено в групу.';
-      if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-    })
-    .catch(function () { msg.textContent = 'Помилка зв\'язку, спробуйте ще раз.'; });
-}
-if (tg) tg.MainButton.onClick(function () { send(false); });
-document.getElementById('fact').onclick = function () { send(true); };
-render(); load();
-setInterval(load, 30000);
+  // ===== Заявка (усі секції й поверхи разом) =====
+  function extraV() { var v = parseFloat(String($('xv').value).replace(',', '.')); return isFinite(v) ? v : 0; }
+  function objOf(s, f) { return 'Будинок №5, секція ' + s + ', ' + f + '-й поверх'; }
+  function dmy(v) { return v ? v.split('-').reverse().join('.') : ''; }
+  function timeStr() { return $('hh').value && $('mm').value ? $('hh').value + ':' + $('mm').value : ''; }
+  function parts() { // непорожні групи: [{s, f}]
+    var P = [];
+    SEC_LIST.forEach(function (s) { FLOORS.forEach(function (f) { if (count(s, f)) P.push({ s: s, f: f }); }); });
+    return P;
+  }
+  function selSum() {
+    var sum = 0;
+    parts().forEach(function (p) { SECS[p.s].E.forEach(function (e) { if (SEL[p.s][p.f][e.id]) sum += e.v; }); });
+    return sum;
+  }
+  function groupLines(s, f, jr) {
+    var S = SECS[s], cur = SEL[s][f], groups = {}, ord = [], lines = [], pn = 0, pv = 0, rest = [], jj = [];
+    S.E.forEach(function (e) {
+      if (!cur[e.id]) return;
+      if (!groups[e.m]) { groups[e.m] = { n: 0, v: 0, axs: [] }; ord.push(e.m); }
+      var g = groups[e.m]; g.n += 1; g.v += e.v; g.axs.push(e.axs);
+    });
+    ord.forEach(function (m) {
+      var g = groups[m];
+      jj.push(S.dn(m) + ' (' + g.axs.join(', ') + ')');
+      if (/^П-/.test(m)) { pn += g.n; pv += g.v; } else rest.push(m);
+    });
+    if (pn) lines.push('- Пілони ×' + pn + ': ' + fmt(pv) + ' м³');
+    rest.forEach(function (m) { var g = groups[m]; lines.push('- ' + S.dn(m) + (g.n > 1 ? ' ×' + g.n : '') + ': ' + fmt(g.v) + ' м³'); });
+    jr.push(objOf(s, f) + ': ' + jj.join('; '));
+    var gv = 0; ord.forEach(function (m) { gv += groups[m].v; }); JVL.push(fmt(gv));
+    return lines;
+  }
+  var J = '', JV = '', JVL = [];
+  function buildOrder() {
+    var P = parts(), jr = [], body = []; JVL = [];
+    var xv = extraV(), xt = $('xt').value.trim();
+    if (!P.length && !xv) { J = ''; return ''; }
+    var objLine;
+    if (P.length === 1) {
+      objLine = objOf(P[0].s, P[0].f);
+      body = groupLines(P[0].s, P[0].f, jr);
+    } else if (P.length > 1) {
+      var secs = []; P.forEach(function (p) { if (secs.indexOf(p.s) < 0) secs.push(p.s); });
+      objLine = 'Будинок №5, ' + (secs.length > 1 ? 'секції ' : 'секція ') + secs.join(', ');
+      P.forEach(function (p) {
+        body.push(p.s + ', ' + p.f + '-й поверх:');
+        body = body.concat(groupLines(p.s, p.f, jr));
+      });
+    } else {
+      objLine = objOf(sec, floor);
+    }
+    if (xv) body.push('- Додатковий бетон' + (xt ? ' (' + xt + ')' : '') + ': ' + fmt(xv) + ' м³');
+    J = jr.join(' | '); JV = JVL.join('|');
+    var head = ['Заявка на бетон: ' + fmt(selSum() + xv) + ' м³', 'Об\'єкт: ' + objLine, 'Подача: ' + (dmy($('date').value) || '___') + ', ' + (timeStr() || '__:__')];
+    if (WHO) head.push('Бригадир: ' + WHO);
+    if (TEST) head.unshift('ТЕСТ, не виконувати');
+    return head.concat(['Конструкції:'], body).join('\n');
+  }
+  function okSend(t) { return !!t && !!$('date').value && dateOk && !!timeStr() && !!WHO; }
+
+  function render() {
+    SECS[sec].E.forEach(function (e) {
+      var s = stateOf(e.id);
+      if (nodes[e.id]) nodes[e.id].setAttribute('class', 'el' + (s ? ' ' + s : '') + (e.id === active ? ' act' : ''));
+    });
+    var total = selSum() + extraV();
+    $('selVol').textContent = fmt(total);
+    $('h1').textContent = sec + ' · Поверх ' + floor;
+    each('[data-sec]', function (b) {
+      var s = b.getAttribute('data-sec'), n = 0; FLOORS.forEach(function (f) { n += count(s, f); });
+      b.classList.toggle('on', s === sec);
+      b.innerHTML = s + (n && s !== sec ? '<span class="dot"></span>' : '');
+    });
+    each('[data-fl]', function (b) {
+      var f = Number(b.getAttribute('data-fl'));
+      b.classList.toggle('on', f === floor);
+      b.innerHTML = f + ' поверх' + (count(sec, f) && f !== floor ? '<span class="dot"></span>' : '');
+    });
+    var bk = $('basket'); bk.innerHTML = '';
+    var P = parts();
+    if (P.length > 1 || (P.length === 1 && (P[0].s !== sec || P[0].f !== floor))) {
+      P.forEach(function (p) {
+        var c = document.createElement('button'); c.type = 'button';
+        c.className = 'chip' + (p.s === sec && p.f === floor ? ' cur' : '');
+        c.textContent = p.s + ', ' + p.f + ' пов.: ' + count(p.s, p.f) + ' ел.';
+        c.addEventListener('click', function () { go(p.s, p.f); });
+        bk.appendChild(c);
+      });
+    }
+    var t = buildOrder();
+    $('order').value = t || 'Виберіть елементи на схемі, і тут з\'явиться готова заявка.';
+    var ok = okSend(t);
+    if (tg) {
+      tg.MainButton.setText(ok ? 'Відправити заявку · ' + fmt(total) + ' м³' : (!t ? 'Виберіть конструкції' : !dateOk ? 'Виберіть дату подачі' : !timeStr() ? 'Виберіть час подачі' : 'Відправити заявку'));
+      tg.MainButton.color = ok ? (tg.themeParams.button_color || '#1F5F8B') : '#9AA6AD';
+      tg.MainButton.show();
+    } else {
+      $('send').hidden = false; $('send').style.opacity = ok ? '' : '0.45';
+    }
+    $('fact').style.opacity = t && $('date').value ? '' : '0.45';
+  }
+
+  function go(s, f) {
+    var redraw = s !== sec;
+    sec = s; floor = f; active = null;
+    $('info').textContent = 'Торкніться елемента на схемі';
+    if (redraw) draw();
+    render();
+  }
+
+  // ===== Відправка =====
+  function send(fact) {
+    if (busy) return;
+    var msg = $('msg'), t = buildOrder();
+    if (!t) { msg.textContent = 'Спочатку виберіть конструкції.'; return; }
+    if (fact) {
+      if (!$('date').value) { msg.textContent = 'Виберіть дату бетонування.'; return; }
+    } else {
+      var nd = !$('date').value || !dateOk, nt = !timeStr();
+      if (nd || nt) { msg.textContent = nd && nt ? 'Натисніть «Сьогодні», «Завтра» або «Післязавтра» і виберіть час подачі.' : nd ? 'Натисніть «Сьогодні», «Завтра» або «Післязавтра», тоді можна відправити заявку.' : 'Виберіть час подачі, тоді можна відправити заявку.'; return; }
+      if (!WHO) { askWho(); return; }
+    }
+    var keys = [];
+    parts().forEach(function (p) { Object.keys(SEL[p.s][p.f]).forEach(function (id) { keys.push(key(p.s, p.f, id)); }); });
+    var d = dmy($('date').value), url = EXEC + KEYQ + (fact ? '&mode=fact' : '') + '&text=' + encodeURIComponent(t) + (J ? '&j=' + encodeURIComponent(J) : '') + (JVL.length > 1 ? '&jv=' + encodeURIComponent(JV) : '');
+    if (url.length > 7500) { msg.textContent = 'Заявка задовга для відправки. Скопіюйте текст і надішліть вручну.'; return; }
+    busy = true; msg.textContent = fact ? 'Записую в журнал...' : 'Надсилаю заявку...';
+    if (tg) tg.MainButton.showProgress();
+    fetch(url, { mode: 'no-cors' })
+      .then(function () {
+        SEC_LIST.forEach(function (s) { FLOORS.forEach(function (f) { SEL[s][f] = {}; }); });
+        $('xv').value = ''; $('xt').value = '';
+        return keys.length ? saveMarks(keys, 'done', d) : null;
+      })
+      .then(function () {
+        msg.textContent = fact ? 'Записано в журнал як залиті ' + d + '. Заявка на завод не відправлялась.' : 'Заявку відправлено в групу. Конструкції позначено залитими ' + d + '.';
+        if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+      })
+      .catch(function () { msg.textContent = 'Помилка зв\'язку, спробуйте ще раз.'; })
+      .then(function () { busy = false; if (tg) tg.MainButton.hideProgress(); render(); });
+  }
+  if (tg) tg.MainButton.onClick(function () { send(false); });
+  $('send').addEventListener('click', function () { send(false); });
+  $('fact').addEventListener('click', function () { send(true); });
+
+  $('copy').addEventListener('click', function () {
+    var ta = $('order'), msg = $('msg');
+    function fb() { ta.focus(); ta.select(); msg.textContent = 'Текст виділено, скопіюйте його через меню телефону.'; }
+    try { navigator.clipboard.writeText(ta.value).then(function () { msg.textContent = 'Скопійовано.'; }, fb); } catch (er) { fb(); }
+  });
+  $('clear').addEventListener('click', function () {
+    SEC_LIST.forEach(function (s) { FLOORS.forEach(function (f) { SEL[s][f] = {}; }); });
+    $('xv').value = ''; $('xt').value = ''; render();
+  });
+  ['xv', 'xt', 'date'].forEach(function (id) { $(id).addEventListener('input', render); $(id).addEventListener('change', render); });
+
+  // ===== Дата і час =====
+  function setDay(k) { var d2 = new Date(); d2.setDate(d2.getDate() + k); $('date').value = d2.getFullYear() + '-' + pad2(d2.getMonth() + 1) + '-' + pad2(d2.getDate()); }
+  setDay(0);
+  each('[data-plus]', function (bt) {
+    bt.addEventListener('click', function () {
+      dateOk = true; setDay(Number(bt.getAttribute('data-plus')));
+      each('[data-plus]', function (x) { x.classList.toggle('on', x === bt); });
+      render();
+    });
+  });
+  $('date').addEventListener('change', function () { dateOk = true; each('[data-plus]', function (x) { x.classList.remove('on'); }); });
+  var hsel = $('hh'), msel = $('mm');
+  hsel.innerHTML = '<option value="">ГГ</option>'; msel.innerHTML = '<option value="">ХХ</option>';
+  for (var h = 8; h <= 18; h++) hsel.innerHTML += '<option>' + pad2(h) + '</option>';
+  ['00', '15', '30', '45'].forEach(function (m) { msel.innerHTML += '<option>' + m + '</option>'; });
+  function syncTime() { if (hsel.value && !msel.value) msel.value = '00'; if (hsel.value === '18') msel.value = '00'; render(); }
+  hsel.addEventListener('change', syncTime); msel.addEventListener('change', syncTime);
+
+  // ===== Секція і поверх: кнопки, #s4-poverh-3 або startapp=s4-3 =====
+  each('[data-sec]', function (b) { b.addEventListener('click', function () { go(b.getAttribute('data-sec'), floor); }); });
+  each('[data-fl]', function (b) { b.addEventListener('click', function () { go(sec, Number(b.getAttribute('data-fl'))); }); });
+  function fromStr(str) {
+    var ms = /s([456])/.exec(str || ''), mf = /(?:poverh-|-)([234])$/.exec(str || '');
+    if (ms) sec = 'С-' + ms[1];
+    if (mf) floor = Number(mf[1]);
+  }
+  fromStr((tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) || '');
+  fromStr(location.hash);
+  window.addEventListener('hashchange', function () { var s0 = sec, f0 = floor; fromStr(location.hash); var s1 = sec, f1 = floor; sec = s0; floor = f0; go(s1, f1); });
+
+  draw(); showWho(); render(); load();
+  setInterval(function () { if (!busy) load(); }, 30000);
+})();
 </script>
 </body>
 </html>
