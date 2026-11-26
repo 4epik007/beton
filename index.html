@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Бетон Будинок 5</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --bg:var(--tg-theme-secondary-bg-color,#EDEFF0);--card:var(--tg-theme-bg-color,#fff);
+  --ink:var(--tg-theme-text-color,#1C2226);--muted:var(--tg-theme-hint-color,#5C6870);
+  --accent:var(--tg-theme-button-color,#1F5F8B);--on:var(--tg-theme-button-text-color,#fff);
+  --line:#C7CDD1;--wall:#B5BDC3;--ws:#6F7B83;--sel:#F2992E;--done:#3E9A63;--fail:#D64541;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:12px;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,system-ui,sans-serif}
+.card{background:var(--card);border-radius:10px;padding:12px;margin-bottom:10px}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.muted{color:var(--muted);font-size:13px}
+.tot{font-size:24px;font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:11px;height:11px;margin-right:4px;vertical-align:-1px}
+svg{width:100%;height:auto;display:block}
+.gl{stroke:#AEB6BC;stroke-width:1.5;stroke-dasharray:8 6}
+.ax{fill:var(--muted);font-size:16px;text-anchor:middle;dominant-baseline:central}
+.el{cursor:pointer}.el .sh{fill:var(--wall);stroke:var(--ws);stroke-width:1.5}
+.el.sel .sh{fill:var(--sel)}.el.done .sh{fill:var(--done)}.el.fail .sh{fill:var(--fail)}
+.lb{fill:var(--ink);font-size:15px;font-weight:600;text-anchor:middle;pointer-events:none}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+button,select,input{font:inherit;color:var(--ink)}
+.b{border:1px solid var(--line);background:transparent;border-radius:8px;padding:9px 4px;min-height:42px}
+.b.on{background:var(--accent);color:var(--on);border-color:var(--accent)}
+select,input{width:100%;border:1px solid var(--line);border-radius:8px;padding:9px;min-height:42px;background:var(--card);font-size:16px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+label{display:block;font-size:13px;color:var(--muted);margin-top:10px}
+pre{white-space:pre-wrap;font:13px/1.5 ui-monospace,Menlo,monospace;margin:0}
+.msg{color:var(--done);font-size:13px;min-height:1.2em;margin-top:6px}
+.ask{position:fixed;left:12px;right:12px;bottom:12px;background:var(--card);border:2px solid var(--fail);border-radius:10px;padding:12px;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.ask .two{margin-top:10px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="row"><b>С-6 · 2-й поверх</b><span class="muted">ПРОБНА ВЕРСІЯ</span></div>
+  <div class="row" style="margin-top:6px"><span class="muted">Вибрано в заявку</span><span class="tot"><span id="sum">0,00</span> м³</span></div>
+</div>
+
+<div class="card">
+  <svg viewBox="0 0 360 200" id="svg">
+    <line class="gl" x1="90" y1="20" x2="90" y2="175"/><line class="gl" x1="270" y1="20" x2="270" y2="175"/>
+    <line class="gl" x1="40" y1="100" x2="330" y2="100"/>
+    <text class="ax" x="90" y="190">1</text><text class="ax" x="270" y="190">2</text><text class="ax" x="22" y="100">А</text>
+  </svg>
+  <div class="legend">
+    <span><i style="background:var(--wall)"></i>не бетонували</span><span><i style="background:var(--sel)"></i>вибрано</span>
+    <span><i style="background:var(--done)"></i>залито</span><span><i style="background:var(--fail)"></i>не залили</span>
+  </div>
+  <div class="muted" id="info" style="margin-top:6px">Торкніться пілона</div>
+</div>
+
+<div class="card">
+  <label style="margin-top:0">Дата подачі</label>
+  <div class="seg"><button class="b" data-d="0">Сьогодні</button><button class="b" data-d="1">Завтра</button><button class="b" data-d="2">Післязавтра</button></div>
+  <label>Час подачі</label>
+  <div class="two"><select id="hh"></select><select id="mm"></select></div>
+  <label>Додатковий бетон, м³ (можна з мінусом)</label>
+  <input id="xv" inputmode="text" placeholder="напр. 1,5 або -0,8">
+  <div class="muted" style="margin-top:10px" id="who"></div>
+</div>
+
+<div class="card"><pre id="order"></pre><div class="msg" id="msg"></div>
+  <button class="b" id="fact" style="width:100%;margin-top:8px">Позначити залитим (без заявки)</button>
+</div>
+
+<script>
+var EXEC = 'https://script.google.com/macros/s/AKfycbzH8gF3gSr9xOH1TUk-IAcwo5jvA4V95D4t1dphKojBcbrZYmSM7UgNpKn-ayeQwjCApQ/exec';
+var PFX = 'test:С-6:2:';
+var E = [
+  { id: 'П-1', name: 'П-1', axs: '1/А', v: 0.92, r: [80, 70, 20, 60] },
+  { id: 'П-2', name: 'П-2', axs: '2/А', v: 1.09, r: [255, 90, 30, 20] }
+];
+var tg = window.Telegram && Telegram.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+var u = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+var WHO = u ? [u.first_name, u.last_name].filter(Boolean).join(' ') : '';
+document.getElementById('who').textContent = WHO ? 'Бригадир: ' + WHO + ' (з Telegram)' : 'Відкрийте через Telegram, щоб підставилось ім\'я';
+
+var ST = {}, SEL = {}, day = null, nodes = {};
+function fmt(n) { return n.toFixed(2).replace('.', ','); }
+function p2(n) { return (n < 10 ? '0' : '') + n; }
+var NS = 'http://www.w3.org/2000/svg', svg = document.getElementById('svg');
+E.forEach(function (e) {
+  var g = document.createElementNS(NS, 'g'); g.setAttribute('class', 'el');
+  var r = document.createElementNS(NS, 'rect'); r.setAttribute('class', 'sh');
+  r.setAttribute('x', e.r[0]); r.setAttribute('y', e.r[1]); r.setAttribute('width', e.r[2]); r.setAttribute('height', e.r[3]);
+  var h = document.createElementNS(NS, 'rect'); h.setAttribute('fill', 'transparent');
+  h.setAttribute('x', e.r[0] - 20); h.setAttribute('y', e.r[1] - 20); h.setAttribute('width', e.r[2] + 40); h.setAttribute('height', e.r[3] + 40);
+  var t = document.createElementNS(NS, 'text'); t.setAttribute('class', 'lb'); t.setAttribute('x', e.r[0] + e.r[2] / 2); t.setAttribute('y', e.r[1] - 8); t.textContent = e.name;
+  g.appendChild(r); g.appendChild(h); g.appendChild(t); svg.appendChild(g);
+  g.addEventListener('click', function () { tap(e); });
+  nodes[e.id] = g;
+});
+
+function st(e) { return SEL[e.id] ? 'sel' : (ST[PFX + e.id] && ST[PFX + e.id].s) || ''; }
+function tap(e) {
+  var s = ST[PFX + e.id];
+  document.getElementById('info').textContent = e.name + ', осі ' + e.axs + ', ' + fmt(e.v) + ' м³' + (s && s.s === 'done' ? ' · залито ' + s.d + (s.who ? ' (' + s.who + ')' : '') : '');
+  if (s && s.s === 'done' && !SEL[e.id]) { askFail(e); return; }
+  if (SEL[e.id]) delete SEL[e.id]; else SEL[e.id] = 1;
+  if (tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+  render();
+}
+function askFail(e) {
+  var d = document.createElement('div'); d.className = 'ask';
+  d.innerHTML = '<div>' + e.name + ' залито. Не забетонували?</div><div class="two"><button class="b" id="n">Ні, залито</button><button class="b" id="y" style="background:var(--fail);color:#fff;border-color:var(--fail)">Так, не залили</button></div>';
+  document.body.appendChild(d);
+  d.querySelector('#n').onclick = function () { d.remove(); };
+  d.querySelector('#y').onclick = function () { d.remove(); mark([e.id], 'fail', ''); };
+}
+function xv() { var v = parseFloat(String(document.getElementById('xv').value).replace(',', '.')); return isFinite(v) ? v : 0; }
+function dateStr() { if (day === null) return ''; var d = new Date(); d.setDate(d.getDate() + day); return p2(d.getDate()) + '.' + p2(d.getMonth() + 1) + '.' + d.getFullYear(); }
+function timeStr() { var h = hh.value, m = mm.value; return h && m ? h + ':' + m : ''; }
+function selList() { return E.filter(function (e) { return SEL[e.id]; }); }
+function orderText() {
+  var L = selList(), sum = 0; L.forEach(function (e) { sum += e.v; }); sum += xv();
+  if (!L.length && !xv()) return '';
+  var lines = ['ТЕСТ, не виконувати', 'Заявка на бетон: ' + fmt(sum) + ' м³', 'Об\'єкт: Будинок №5, секція С-6, 2-й поверх',
+    'Подача: ' + (dateStr() || '___') + ', ' + (timeStr() || '__:__')];
+  if (WHO) lines.push('Бригадир: ' + WHO);
+  lines.push('Конструкції:');
+  if (L.length) lines.push('- Пілони ×' + L.length + ': ' + fmt(sum - xv()) + ' м³');
+  if (xv()) lines.push('- Додатковий бетон: ' + fmt(xv()) + ' м³');
+  return lines.join('\n');
+}
+function render() {
+  var sum = 0;
+  E.forEach(function (e) { var s = st(e); nodes[e.id].setAttribute('class', 'el' + (s ? ' ' + s : '')); if (SEL[e.id]) sum += e.v; });
+  document.getElementById('sum').textContent = fmt(sum + xv());
+  var t = orderText();
+  document.getElementById('order').textContent = t || 'Виберіть пілони, і тут з\'явиться заявка.';
+  if (tg) {
+    var ok = t && dateStr() && timeStr();
+    tg.MainButton.setText(ok ? 'Відправити заявку · ' + fmt(sum + xv()) + ' м³' : 'Виберіть пілони, дату і час');
+    tg.MainButton.color = ok ? tg.themeParams.button_color || '#1F5F8B' : '#9AA6AD';
+    tg.MainButton.show();
+  }
+}
+
+var hh = document.getElementById('hh'), mm = document.getElementById('mm');
+hh.innerHTML = '<option value="">ГГ</option>'; mm.innerHTML = '<option value="">ХХ</option>';
+for (var h = 8; h <= 18; h++) hh.innerHTML += '<option>' + p2(h) + '</option>';
+['00', '15', '30', '45'].forEach(function (m) { mm.innerHTML += '<option>' + m + '</option>'; });
+hh.onchange = function () { if (hh.value && !mm.value) mm.value = '00'; render(); }; mm.onchange = render;
+document.getElementById('xv').oninput = render;
+Array.prototype.forEach.call(document.querySelectorAll('[data-d]'), function (b) {
+  b.onclick = function () {
+    day = +b.getAttribute('data-d');
+    Array.prototype.forEach.call(document.querySelectorAll('[data-d]'), function (x) { x.classList.toggle('on', x === b); });
+    render();
+  };
+});
+
+function load() {
+  fetch(EXEC + '?key=beton5&mode=state').then(function (r) { return r.json(); })
+    .then(function (j) { ST = j || {}; render(); })
+    .catch(function () { document.getElementById('msg').textContent = 'Не вдалося завантажити позначки.'; });
+}
+function mark(ids, s, d) {
+  var q = '?key=beton5&mode=mark&s=' + s + '&d=' + encodeURIComponent(d) + '&who=' + encodeURIComponent(WHO) +
+    '&ids=' + encodeURIComponent(ids.map(function (i) { return PFX + i; }).join(','));
+  return fetch(EXEC + q).then(function (r) { return r.json(); }).then(function (j) { ST = j || {}; render(); });
+}
+function send(fact) {
+  var t = orderText(), msg = document.getElementById('msg');
+  if (!t) { msg.textContent = 'Спочатку виберіть пілони.'; return; }
+  if (!dateStr() || (!fact && !timeStr())) { msg.textContent = fact ? 'Виберіть дату.' : 'Виберіть дату і час.'; return; }
+  var ids = selList().map(function (e) { return e.id; }), d = dateStr();
+  msg.textContent = 'Надсилаю...';
+  fetch(EXEC + '?key=beton5' + (fact ? '&mode=fact' : '') + '&text=' + encodeURIComponent(t), { mode: 'no-cors' })
+    .then(function () { SEL = {}; document.getElementById('xv').value = ''; return mark(ids, 'done', d); })
+    .then(function () {
+      msg.textContent = fact ? 'Позначено залитим ' + d + '.' : 'Заявку відправлено в групу.';
+      if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+    })
+    .catch(function () { msg.textContent = 'Помилка зв\'язку, спробуйте ще раз.'; });
+}
+if (tg) tg.MainButton.onClick(function () { send(false); });
+document.getElementById('fact').onclick = function () { send(true); };
+render(); load();
+setInterval(load, 30000);
+</script>
+</body>
+</html>
