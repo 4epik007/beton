@@ -131,6 +131,10 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
       <div class="tot"><span class="lbl">Вибрано в заявку</span><span id="selVol">0,00</span> <small>м³</small></div>
       <button class="btn alt small" id="clear" type="button">Зняти вибір</button>
     </div>
+    <div class="two" id="stg" hidden>
+      <button class="btn alt small" data-stage="1" type="button">1-й рівень (до +2,900)</button>
+      <button class="btn alt small" data-stage="2" type="button">2-й рівень (до +4,200)</button>
+    </div>
     <div class="basket" id="basket"></div>
     <span class="note" id="info" style="margin:0">Торкніться елемента на схемі</span>
   </div>
@@ -152,10 +156,6 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
       <span><i style="background:var(--done)"></i>залито</span>
       <span><i style="background:var(--fail)"></i>не залили</span>
       <span>«2-2/5» = П-2-2, номер 5</span>
-    </div>
-    <div class="two" id="stg" hidden style="margin-bottom:8px">
-      <button class="btn alt small" data-stage="1" type="button">1-й рівень (до +2,900)</button>
-      <button class="btn alt small" data-stage="2" type="button">2-й рівень (до +4,200)</button>
     </div>
     <svg id="svg" role="img" aria-label="План поверху"></svg>
   </section>
@@ -1015,6 +1015,7 @@ textarea { min-height: 190px; resize: vertical; font-family: var(--font-num); fo
     sec = s; floor = f; view = v || view; active = null;
     $('info').textContent = view === 'h' ? 'Торкніться секції на плані' : 'Торкніться елемента на схемі'; $('slabInfo').hidden = true;
     if (redraw) draw();
+    window.scrollTo(0, 0);
     if (view === 'z') drawZ();
     render();
   }
